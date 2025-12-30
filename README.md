@@ -1,3 +1,6 @@
+# NewsPortal-Experience
+An application built for learning Contentstack and to expand my knowledge across CMS and other techs
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
