@@ -5,79 +5,83 @@ interface ArticlesSectionProps {
   data: any[];
   title?: string;
   description?: string;
+  seeMoreText?: string;
+  seeMoreLink?: string;
+  locale?: string;
 }
 
-export default function ArticlesSection({ data, title = "Latest News", description }: ArticlesSectionProps) {
+export default function ArticlesSection({ 
+  data, 
+  title = "Latest News", 
+  description,
+  seeMoreText,
+  seeMoreLink,
+  locale = 'en-us'
+}: ArticlesSectionProps) {
   if (!data || data.length === 0) return null;
 
-  // Get hero image from article
+  // Get hero image from article's group field
   const getHeroImage = (article: any) => {
     if (!article?.group) return null;
     const heroGroup = article.group.find((g: any) => g.is_hero_image);
     return heroGroup?.image?.url || article.group[0]?.image?.url;
   };
 
+  // Default see more text based on locale
+  const defaultSeeMoreText = locale === 'ta-in' ? 'அனைத்தும் காண்க' : 'See all';
+  const defaultSeeMoreLink = `/${locale}/news`;
+
   return (
-    <section className="section">
+    <section className="articles-section">
       <div className="container">
-        <div className="section-header">
-          <div>
+        <div className="section-header-row">
+          <div className="section-header-text">
             <h2 className="section-title">{title}</h2>
-            {description && (
-              <p className="text-muted" style={{ marginTop: 4 }}>{description}</p>
+            {description && description.trim() !== '' && (
+              <p className="section-desc">{description}</p>
             )}
           </div>
-          <Link href="/news" className="see-all">
-            See All
+          <Link href={seeMoreLink || defaultSeeMoreLink} className="see-all-btn">
+            {seeMoreText || defaultSeeMoreText}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="m9 18 6-6-6-6"/>
             </svg>
           </Link>
         </div>
 
-        <div className="articles-grid">
-          {data.map((item: any, index: number) => {
-            const article = item.referenced_article?.[0] || item.referenced_article || item;
-            if (!article) return null;
-
+        {/* Horizontal Scroll Container */}
+        <div className="articles-row">
+          {data.slice(0, 8).map((article: any, index: number) => {
             const heroImage = getHeroImage(article);
-            // Category is already included in the article data via reference
             const category = article.category?.[0] || article.category;
-            // Author is already included in the article data via reference
             const author = article.author?.[0] || article.author;
-            const articleTitle = article.headline || article.title || 'Untitled Article';
+            const articleTitle = article.title || article.headline || (locale === 'ta-in' ? 'தலைப்பு இல்லை' : 'Untitled Article');
 
             return (
               <Link 
                 key={article.uid || index} 
-                href={`/news/${article.uid}`}
-                className="article-card"
+                href={`/${locale}/news/${article.uid}`}
+                className="article-card-new"
               >
-                <div className="article-card-image">
+                <div className="article-card-img">
                   <img 
-                    src={heroImage || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"><rect fill="%23e5e7eb" width="400" height="250"/><text x="200" y="130" text-anchor="middle" fill="%239ca3af" font-size="16">No Image</text></svg>'} 
+                    src={heroImage || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280"><rect fill="%231a1a2e" width="400" height="280"/></svg>'} 
                     alt={articleTitle}
                   />
                 </div>
-                <div className="article-card-content">
-                  {category && (
-                    <span className="article-card-category">
-                      {category.name || category.title}
-                    </span>
-                  )}
-                  <h3 className="article-card-title">{articleTitle}</h3>
+                <div className="article-card-body">
                   <div className="article-card-meta">
                     {author?.profile_image?.url && (
-                      <img 
-                        src={author.profile_image.url} 
-                        alt={author.name || author.title}
-                        className="article-card-author-img"
-                      />
+                      <img src={author.profile_image.url} alt="" className="meta-avatar" />
                     )}
-                    <span>{author?.name || author?.title || 'Unknown'}</span>
-                    <span>•</span>
-                    <span>{timeAgo(article.published_date)}</span>
+                    <span className="meta-author">{author?.name || author?.title || (locale === 'ta-in' ? 'தெரியாத' : 'Unknown')}</span>
+                    <span className="meta-dot">•</span>
+                    {category && (
+                      <span className="meta-category">{category.title || category.name}</span>
+                    )}
                   </div>
+                  <h3 className="article-card-title">{articleTitle}</h3>
+                  <span className="article-card-time">{timeAgo(article.published_date, locale)}</span>
                 </div>
               </Link>
             );

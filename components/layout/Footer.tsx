@@ -1,20 +1,35 @@
 import Link from "next/link";
-import { getFooter, jsonRteToText } from "@/helper";
+import { getFooter, getAllCategories, jsonRteToText } from "@/helper";
 
-export default async function Footer() {
-  const footer = await getFooter();
+interface FooterProps {
+  locale?: string;
+}
+
+export default async function Footer({ locale = 'en-us' }: FooterProps) {
+  const [footer, categories] = await Promise.all([
+    getFooter(locale),
+    getAllCategories(locale)
+  ]);
 
   if (!footer) {
     return (
       <footer className="footer">
         <div className="container">
           <div className="footer-bottom">
-            © {new Date().getFullYear()} NewsPortal. Built with Contentstack & Next.js
+            © {new Date().getFullYear()} NewzHub. Built with Contentstack & Next.js
           </div>
         </div>
       </footer>
     );
   }
+
+  // Helper to localize internal links
+  const localizeHref = (href: string) => {
+    if (!href) return '#';
+    return href.startsWith('/') && !href.startsWith(`/${locale}`) 
+      ? `/${locale}${href}` 
+      : href;
+  };
 
   return (
     <footer className="footer">
@@ -22,7 +37,7 @@ export default async function Footer() {
         <div className="footer-grid">
           {/* Brand Column */}
           <div className="footer-brand">
-            <div className="header-logo">
+            <Link href={`/${locale}`} className="header-logo">
               {footer.logo?.image?.url && (
                 <img
                   src={footer.logo.image.url}
@@ -30,68 +45,80 @@ export default async function Footer() {
                 />
               )}
               <span className="footer-logo-text">{footer.title}</span>
+            </Link>
+            {footer.description && (
+              <p className="footer-desc">{footer.description}</p>
+            )}
+          </div>
+
+          {/* Quick Links - from navigation_menu */}
+          {footer.navigation_menu && footer.navigation_menu.length > 0 && (
+            <div>
+              <h4 className="footer-title">
+                {locale === 'ta-in' ? 'விரைவு இணைப்புகள்' : 'Quick Links'}
+              </h4>
+              <ul className="footer-links">
+                {footer.navigation_menu.map((item: any, index: number) => (
+                  <li key={item._metadata?.uid || index}>
+                    <Link href={localizeHref(item.link?.href)}>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="footer-desc">
-              Your trusted source for breaking news, in-depth analysis, and 
-              comprehensive coverage of the stories that matter most.
-            </p>
-          </div>
+          )}
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="footer-title">Quick Links</h4>
-            <ul className="footer-links">
-              {footer.navigation_menu?.map((item: any, index: number) => (
-                <li key={item.uid || index}>
-                  <Link href={item.link?.href || "#"}>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h4 className="footer-title">Categories</h4>
-            <ul className="footer-links">
-              <li><Link href="#">World News</Link></li>
-              <li><Link href="#">Politics</Link></li>
-              <li><Link href="#">Business</Link></li>
-              <li><Link href="#">Technology</Link></li>
-              <li><Link href="#">Sports</Link></li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h4 className="footer-title">Follow Us</h4>
-            <div className="footer-social">
-              {footer.social_apps?.map((social: any, index: number) => (
-                <a 
-                  key={social.uid || index}
-                  href={social.link?.href || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  title={social.label}
-                >
-                  {social.icon?.url? (
-                    <img src={social.icon.url} alt={social.label} />
-                  ) : (
-                    <span style={{ fontSize: '0.8rem' }}>{social.label?.charAt(0)}</span>
-                  )}
-                </a>
-              ))}
+          {/* Categories - dynamically fetched */}
+          {categories && categories.length > 0 && (
+            <div>
+              <h4 className="footer-title">
+                {locale === 'ta-in' ? 'வகைகள்' : 'Categories'}
+              </h4>
+              <ul className="footer-links">
+                {categories.slice(0, 5).map((category: any) => (
+                  <li key={category.uid}>
+                    <Link href={`/${locale}/category/${category.uid}`}>
+                      {category.title || category.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          )}
+
+          {/* Social Apps */}
+          {footer.social_apps && footer.social_apps.length > 0 && (
+            <div>
+              <h4 className="footer-title">
+                {locale === 'ta-in' ? 'எங்களை பின்தொடரவும்' : 'Follow Us'}
+              </h4>
+              <div className="footer-social">
+                {footer.social_apps.map((social: any, index: number) => (
+                  <a 
+                    key={social._metadata?.uid || index}
+                    href={social.link?.href || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    title={social.label}
+                  >
+                    {social.icon?.url ? (
+                      <img src={social.icon.url} alt={social.label} />
+                    ) : (
+                      <span style={{ fontSize: '0.8rem' }}>{social.label?.charAt(0)}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="footer-bottom">
           {(() => {
             if (!footer.copyright_text) {
-              return `© ${new Date().getFullYear()} ${footer.title || 'NewsPortal'}. All rights reserved.`;
+              return `© ${new Date().getFullYear()} ${footer.title || 'NewzHub'}. ${locale === 'ta-in' ? 'அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.' : 'All rights reserved.'}`;
             }
-            // Handle both string and JSON RTE
             return typeof footer.copyright_text === 'string' 
               ? footer.copyright_text 
               : jsonRteToText(footer.copyright_text);

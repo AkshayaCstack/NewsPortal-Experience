@@ -5,6 +5,9 @@ import { useState, useRef } from "react";
 
 interface AuthorsSectionProps {
   data: any[];
+  title?: string;
+  description?: string;
+  locale?: string;
 }
 
 interface TooltipPosition {
@@ -12,7 +15,7 @@ interface TooltipPosition {
   left: number;
 }
 
-export default function AuthorsSection({ data }: AuthorsSectionProps) {
+export default function AuthorsSection({ data, title, description, locale = 'en-us' }: AuthorsSectionProps) {
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ top: 0, left: 0 });
   const [activeAuthor, setActiveAuthor] = useState<any>(null);
@@ -20,7 +23,6 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = (e: React.MouseEvent, authorId: string, author: any) => {
-    // Clear any pending hide timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -36,7 +38,6 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
   };
 
   const handleMouseLeave = () => {
-    // Delay hiding to allow moving to tooltip
     hideTimeoutRef.current = setTimeout(() => {
       if (!isHoveringTooltip) {
         setActiveTooltip(null);
@@ -46,7 +47,6 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
   };
 
   const handleTooltipMouseEnter = () => {
-    // Clear hide timeout when entering tooltip
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -62,17 +62,27 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
 
   if (!data || data.length === 0) return null;
 
+  // Localized text
+  const defaultTitle = locale === 'ta-in' ? 'சிறந்த எழுத்தாளர்கள்' : 'Top Writers';
+  const viewProfileText = locale === 'ta-in' ? 'சுயவிவரம் காண்க →' : 'View Profile →';
+  const unknownText = locale === 'ta-in' ? 'தெரியாத' : 'Unknown';
+
   return (
-    <section className="section authors-section">
+    <section className="authors-section">
       <div className="container">
-        <div className="section-header">
-          <h2 className="section-title">Top Writers</h2>
+        <div className="section-header-row">
+          <div className="section-header-text">
+            <h2 className="section-title">{title || defaultTitle}</h2>
+            {description && description.trim() !== '' && (
+              <p className="section-desc">{description}</p>
+            )}
+          </div>
         </div>
 
         <div className="authors-scroll-row">
           {data.map((item: any) => {
             const author = item.reference?.[0] || item;
-            const authorName = author.name || author.title || 'Unknown';
+            const authorName = author.name || author.title || unknownText;
             const authorId = author.uid || authorName;
             
             return (
@@ -82,7 +92,7 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
                 onMouseEnter={(e) => handleMouseEnter(e, authorId, author)}
                 onMouseLeave={handleMouseLeave}
               >
-                <Link href={`/author/${author.uid}`}>
+                <Link href={`/${locale}/author/${author.uid}`}>
                   <div className="author-avatar-card">
                     <div className="author-avatar-image">
                       <img
@@ -90,7 +100,6 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
                         alt={authorName}
                       />
                     </div>
-                 
                   </div>
                 </Link>
               </div>
@@ -114,12 +123,12 @@ export default function AuthorsSection({ data }: AuthorsSectionProps) {
           onMouseLeave={handleTooltipMouseLeave}
         >
           <div className="author-tooltip-body">
-            <strong>{activeAuthor.name || activeAuthor.title || 'Unknown'}</strong>
+            <strong>{activeAuthor.name || activeAuthor.title || unknownText}</strong>
             {activeAuthor.bio && (
               <p>{activeAuthor.bio.length > 80 ? activeAuthor.bio.substring(0, 80) + '...' : activeAuthor.bio}</p>
             )}
-            <Link href={`/author/${activeAuthor.uid}`} className="view-profile">
-              View Profile →
+            <Link href={`/${locale}/author/${activeAuthor.uid}`} className="view-profile">
+              {viewProfileText}
             </Link>
           </div>
           <div className="author-tooltip-arrow" />
