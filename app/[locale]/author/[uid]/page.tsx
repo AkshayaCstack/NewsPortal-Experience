@@ -1,5 +1,6 @@
 import { getAuthorByUid, getArticlesByAuthor, getAllAuthors } from "@/helper";
 import ArticlesSection from "@/components/home/ArticlesSection";
+import AuthorActions from "@/components/author/AuthorActions";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -95,6 +96,11 @@ export default async function AuthorPage({ params }: { params: Promise<{ uid: st
                   <span className="stat-value">{articles.length}</span>
                   <span className="stat-label">Articles</span>
                 </div>
+              </div>
+              
+              {/* Follow Button */}
+              <div className="author-actions">
+                <AuthorActions authorUid={author.uid} authorName={authorName} />
               </div>
             </div>
           </div>

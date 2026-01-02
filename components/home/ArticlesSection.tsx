@@ -51,7 +51,9 @@ export default function ArticlesSection({
 
         {/* Horizontal Scroll Container */}
         <div className="articles-row">
-          {data.slice(0, 8).map((article: any, index: number) => {
+          {data.slice(0, 8).map((item: any, index: number) => {
+            // Unwrap referenced_article if present
+            const article = item.referenced_article || item;
             const heroImage = getHeroImage(article);
             const category = article.category?.[0] || article.category;
             const author = article.author?.[0] || article.author;

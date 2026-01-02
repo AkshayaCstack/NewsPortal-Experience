@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Providers from "@/components/Providers";
 import { i18nConfig, type Locale } from "@/i18n.config";
 import { notFound } from "next/navigation";
 
@@ -35,9 +36,11 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body>
-        <Header locale={locale} />
-        {children}
-        <Footer locale={locale} />
+        <Providers>
+          <Header locale={locale} />
+          {children}
+          <Footer locale={locale} />
+        </Providers>
       </body>
     </html>
   );

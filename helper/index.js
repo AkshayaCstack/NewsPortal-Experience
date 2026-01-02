@@ -7,18 +7,23 @@ const DEFAULT_LOCALE = 'en-us';
    PAGE (by URL)
 -------------------------- */
 export async function getPageByURL(url, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("page")
-    .Query()
-    .language(locale)
-    .where("url", url)
-    .includeReference([
-      "components.category_section.category.reference",
-      "components.authors_section.author.reference"
-    ])
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("page")
+      .Query()
+      .language(locale)
+      .where("url", url)
+      .includeReference([
+        "components.category_section.category.reference",
+        "components.authors_section.author.reference"
+      ])
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0]?.[0];
+    const result = await Query.find();
+    return result[0]?.[0];
+  } catch (error) {
+    console.error('Error fetching page:', error);
+    return null;
+  }
 }
 
 /* -------------------------
@@ -26,244 +31,324 @@ export async function getPageByURL(url, locale = DEFAULT_LOCALE) {
    For UI text like "See more", "Subscribe", etc.
 -------------------------- */
 export async function getSimpleText(title, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("labels")
-    .Query()
-    .language(locale)
-    .where("title", title)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("labels")
+      .Query()
+      .language(locale)
+      .where("title", title)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0]?.[0]?.title || title;
+    const result = await Query.find();
+    return result[0]?.[0]?.title || title;
+  } catch (error) {
+    console.error('Error fetching simple text:', error);
+    return title;
+  }
 }
 
 /* -------------------------
    GET ALL SIMPLE TEXTS
 -------------------------- */
 export async function getAllSimpleTexts(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("labels")
-    .Query()
-    .language(locale)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("labels")
+      .Query()
+      .language(locale)
+      .toJSON();
 
-  const result = await Query.find();
-  const texts = result[0] || [];
-  // Return as key-value object for easy access
-  const textMap = {};
-  texts.forEach(t => {
-    textMap[t.title] = t.title;
-  });
-  return textMap;
+    const result = await Query.find();
+    const texts = result[0] || [];
+    // Return as key-value object for easy access
+    const textMap = {};
+    texts.forEach(t => {
+      textMap[t.title] = t.title;
+    });
+    return textMap;
+  } catch (error) {
+    console.error('Error fetching simple texts:', error);
+    return {};
+  }
 }
 
 /* -------------------------
    HEADER
 -------------------------- */
 export async function getHeader(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("header")
-    .Query()
-    .language(locale)
-    .includeReference(["navigation_menu.reference"])
-    .toJSON();
-    
-  const [res] = await Query.find();
-  return res?.[0];
+  try {
+    const Query = Stack.ContentType("header")
+      .Query()
+      .language(locale)
+      .includeReference(["navigation_menu.reference"])
+      .toJSON();
+      
+    const [res] = await Query.find();
+    return res?.[0];
+  } catch (error) {
+    console.error('Error fetching header:', error);
+    return null;
+  }
 }
 
 /* -------------------------
    FOOTER
 -------------------------- */
 export async function getFooter(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("footer")
-    .Query()
-    .language(locale)
-    .toJSON();
-    
-  const [res] = await Query.find();
-  return res?.[0];
+  try {
+    const Query = Stack.ContentType("footer")
+      .Query()
+      .language(locale)
+      .toJSON();
+      
+    const [res] = await Query.find();
+    return res?.[0];
+  } catch (error) {
+    console.error('Error fetching footer:', error);
+    return null;
+  }
 }
 
 /* -------------------------
    ARTICLE DETAIL (by UID)
 -------------------------- */
 export async function getArticleBySlug(slug, locale = DEFAULT_LOCALE) {
-  const result = await Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .includeReference(["author", "category", "related_articles"])
-    .toJSON()
-    .find();
-  
-  // Find the article by uid
-  return result[0]?.find(article => article.uid === slug);
+  try {
+    const result = await Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .includeReference(["author", "category", "related_articles"])
+      .toJSON()
+      .find();
+    
+    // Find the article by uid
+    return result[0]?.find(article => article.uid === slug);
+  } catch (error) {
+    console.error('Error fetching article:', error);
+    return null;
+  }
 }
 
 /* -------------------------
    ALL ARTICLE SLUGS/UIDs (for static generation)
 -------------------------- */
 export async function getAllArticleSlugs(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .only(["uid"])
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .only(["uid"])
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0]?.map(a => a.uid) || [];
+    const result = await Query.find();
+    return result[0]?.map(a => a.uid) || [];
+  } catch (error) {
+    console.error('Error fetching article slugs:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    ALL ARTICLES
 -------------------------- */
 export async function getAllArticles(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .includeReference(["author", "category"])
-    .descending("published_date")
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .includeReference(["author", "category"])
+      .descending("published_date")
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching articles:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    BREAKING NEWS ARTICLES
 -------------------------- */
 export async function getBreakingNews(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .where("is_breaking", true)
-    .includeReference(["author", "category"])
-    .descending("published_date")
-    .limit(5)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .where("is_breaking", true)
+      .includeReference(["author", "category"])
+      .descending("published_date")
+      .limit(5)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching breaking news:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    FEATURED ARTICLES
 -------------------------- */
 export async function getFeaturedArticles(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .where("is_featured", true)
-    .includeReference(["author", "category"])
-    .descending("published_date")
-    .limit(6)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .where("is_featured", true)
+      .includeReference(["author", "category"])
+      .descending("published_date")
+      .limit(6)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching featured articles:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    ALL CATEGORIES
 -------------------------- */
 export async function getAllCategories(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("category")
-    .Query()
-    .language(locale)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("category")
+      .Query()
+      .language(locale)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    FEATURED AUTHORS
 -------------------------- */
 export async function getFeaturedAuthors(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("author")
-    .Query()
-    .language(locale)
-    .where("is_featured", true)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("author")
+      .Query()
+      .language(locale)
+      .where("is_featured", true)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching featured authors:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    GET AUTHOR BY UID
 -------------------------- */
 export async function getAuthorByUid(uid, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("author")
-    .Query()
-    .language(locale)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("author")
+      .Query()
+      .language(locale)
+      .toJSON();
 
-  const result = await Query.find();
-  const authors = result[0] || [];
-  return authors.find(author => author.uid === uid);
+    const result = await Query.find();
+    const authors = result[0] || [];
+    return authors.find(author => author.uid === uid);
+  } catch (error) {
+    console.error('Error fetching author:', error);
+    return null;
+  }
 }
 
 /* -------------------------
    GET ALL AUTHORS
 -------------------------- */
 export async function getAllAuthors(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("author")
-    .Query()
-    .language(locale)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("author")
+      .Query()
+      .language(locale)
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching authors:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    GET ARTICLES BY AUTHOR
 -------------------------- */
 export async function getArticlesByAuthor(authorUid, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .includeReference(["author", "category"])
-    .descending("published_date")
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .includeReference(["author", "category"])
+      .descending("published_date")
+      .toJSON();
 
-  const result = await Query.find();
-  const articles = result[0] || [];
-  return articles.filter(article => {
-    const authors = article.author || [];
-    return authors.some(a => a.uid === authorUid);
-  });
+    const result = await Query.find();
+    const articles = result[0] || [];
+    return articles.filter(article => {
+      const authors = article.author || [];
+      return authors.some(a => a.uid === authorUid);
+    });
+  } catch (error) {
+    console.error('Error fetching articles by author:', error);
+    return [];
+  }
 }
 
 /* -------------------------
    GET CATEGORY BY UID
 -------------------------- */
 export async function getCategoryByUid(uid, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("category")
-    .Query()
-    .language(locale)
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("category")
+      .Query()
+      .language(locale)
+      .toJSON();
 
-  const result = await Query.find();
-  const categories = result[0] || [];
-  return categories.find(category => category.uid === uid);
+    const result = await Query.find();
+    const categories = result[0] || [];
+    return categories.find(category => category.uid === uid);
+  } catch (error) {
+    console.error('Error fetching category:', error);
+    return null;
+  }
 }
 
 /* -------------------------
    GET ARTICLES BY CATEGORY
 -------------------------- */
 export async function getArticlesByCategory(categoryUid, locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("news_article")
-    .Query()
-    .language(locale)
-    .includeReference(["author", "category"])
-    .descending("published_date")
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("news_article")
+      .Query()
+      .language(locale)
+      .includeReference(["author", "category"])
+      .descending("published_date")
+      .toJSON();
 
-  const result = await Query.find();
-  const articles = result[0] || [];
-  return articles.filter(article => {
-    const categories = article.category || [];
-    return categories.some(c => c.uid === categoryUid);
-  });
+    const result = await Query.find();
+    const articles = result[0] || [];
+    return articles.filter(article => {
+      const categories = article.category || [];
+      return categories.some(c => c.uid === categoryUid);
+    });
+  } catch (error) {
+    console.error('Error fetching articles by category:', error);
+    return [];
+  }
 }
 
 /* -------------------------
@@ -702,15 +787,20 @@ export async function getAllVideos(locale = DEFAULT_LOCALE) {
    VIDEOS: Get Featured Videos
 -------------------------- */
 export async function getFeaturedVideos(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("videos")
-    .Query()
-    .language(locale)
-    .where("is_featured", true)
-    .includeReference(["category"])
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("videos")
+      .Query()
+      .language(locale)
+      .where("is_featured", true)
+      .includeReference(["category"])
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching featured videos:', error);
+    return [];
+  }
 }
 
 /* -------------------------
@@ -741,15 +831,20 @@ export function getYouTubeId(url) {
    MAGAZINE: Get All Magazines
 -------------------------- */
 export async function getAllMagazines(locale = DEFAULT_LOCALE) {
-  const Query = Stack.ContentType("magazine")
-    .Query()
-    .language(locale)
-    .includeReference(["author", "category"])
-    .descending("date")
-    .toJSON();
+  try {
+    const Query = Stack.ContentType("magazine")
+      .Query()
+      .language(locale)
+      .includeReference(["author", "category"])
+      .descending("date")
+      .toJSON();
 
-  const result = await Query.find();
-  return result[0] || [];
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching magazines:', error);
+    return [];
+  }
 }
 
 /* -------------------------

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getHeader, jsonRteToText } from "@/helper";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import HeaderActions from "@/components/layout/HeaderActions";
 
 interface HeaderProps {
   locale?: string;
@@ -17,9 +17,7 @@ export default async function Header({ locale = 'en-us' }: HeaderProps) {
             <Link href={`/${locale}`} className="header-logo">
               <span className="header-logo-text">NewzHub</span>
             </Link>
-            <div className="header-actions">
-              <LanguageSwitcher currentLocale={locale} />
-            </div>
+            <HeaderActions locale={locale} />
           </div>
         </div>
       </header>
@@ -90,19 +88,8 @@ export default async function Header({ locale = 'en-us' }: HeaderProps) {
               })}
             </nav>
 
-            {/* Actions */}
-            <div className="header-actions">
-              {/* Language Switcher */}
-              <LanguageSwitcher currentLocale={locale} />
-              
-              {/* Search */}
-              <div className="header-search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="m21 21-4.35-4.35"/>
-                </svg>
-              </div>
-            </div>
+            {/* Actions with Auth */}
+            <HeaderActions locale={locale} />
           </div>
         </div>
       </header>

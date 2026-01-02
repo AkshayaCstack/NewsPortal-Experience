@@ -10,6 +10,7 @@ import {
   jsonRteToHtml,
   jsonRteToText 
 } from '@/helper';
+import ContentInteractions from '@/components/interactions/ContentInteractions';
 
 // Source icons and labels
 const sourceConfig: Record<string, { label: string; icon: string; color: string }> = {
@@ -303,6 +304,14 @@ export default async function LiveBlogPage({ params }: PageProps) {
               </div>
             </aside>
           </div>
+
+          {/* Content Interactions - Like, Save, Comments */}
+          <ContentInteractions 
+            contentType="live_blog"
+            contentUid={liveBlog.uid}
+            author={author ? { uid: author.uid, name: author.name || author.title } : null}
+            category={category ? { uid: category.uid, name: category.name || category.title } : null}
+          />
         </div>
       </section>
     </main>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAllLiveBlogs, formatDate, jsonRteToText } from '@/helper';
 import { i18nConfig } from "@/i18n.config";
+import ContentSearch from "@/components/search/ContentSearch";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -29,64 +30,68 @@ export default async function LiveBlogsPage({ params }: PageProps) {
 
   // Separate live blogs by status
   const activeLiveBlogs = liveBlogs.filter((blog: any) => blog.status === 'live');
+  const otherBlogs = liveBlogs.filter((blog: any) => blog.status !== 'live');
 
   return (
-    <main className="live-blogs-page">
-      {/* Hero Section */}
-      <section className="live-hero-section">
+    <main className="content-page">
+      {/* Page Header with Search */}
+      <section className="content-page-header">
         <div className="container">
-          <div className="live-hero-content">
-            <div className="live-hero-badge">
-              <span className="pulse-dot"></span>
-              Live Coverage
+          <div className="content-page-title-row">
+            <div className="content-page-info">
+              <span className="content-page-icon live-icon">
+                <span className="pulse-dot-small"></span>
+                🔴
+              </span>
+              <div>
+                <h1>Live Blogs</h1>
+                <p>{liveBlogs.length} live coverage{liveBlogs.length !== 1 ? 's' : ''}</p>
+              </div>
             </div>
-            <h1>Live Blogs</h1>
-            <p className="live-hero-desc">
-              Follow real-time updates on breaking news and major events from our reporters on the ground.
-            </p>
+            <ContentSearch 
+              locale={locale} 
+              contentType="live_blog"
+              placeholder="Search live blogs..."
+            />
           </div>
         </div>
       </section>
 
-      {/* Active Live Blogs */}
-      {activeLiveBlogs.length > 0 && (
-        <section className="section live-active-section">
-          <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">
-                <span className="live-indicator"></span>
+      {/* Content Grid */}
+      <section className="content-grid-section">
+        <div className="container">
+          {/* Active Live Blogs */}
+          {activeLiveBlogs.length > 0 && (
+            <div className="content-subsection">
+              <h2 className="content-subsection-title live-title">
+                <span className="live-indicator-dot"></span>
                 Happening Now
               </h2>
-            </div>
-            <div className="live-active-grid">
-              {activeLiveBlogs.map((blog: any) => (
-                <LiveBlogCard key={blog.uid} blog={blog} locale={locale} featured />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* All Live Blogs */}
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">All Live Coverage</h2>
-          </div>
-          
-          {liveBlogs.length > 0 ? (
-            <div className="live-blogs-grid">
-              {liveBlogs.map((blog: any) => (
-                <LiveBlogCard key={blog.uid} blog={blog} locale={locale} />
-              ))}
-            </div>
-          ) : (
-            <div className="no-live-blogs">
-              <div className="no-live-icon">📡</div>
-              <h3>No Live Blogs Yet</h3>
-              <p>Check back soon for live coverage of breaking news and events.</p>
+              <div className="live-blogs-grid">
+                {activeLiveBlogs.map((blog: any) => (
+                  <LiveBlogCard key={blog.uid} blog={blog} locale={locale} featured />
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Other Live Blogs */}
+          <div className="content-subsection">
+            <h2 className="content-subsection-title">All Coverage</h2>
+            {liveBlogs.length > 0 ? (
+              <div className="live-blogs-grid">
+                {(otherBlogs.length > 0 ? otherBlogs : liveBlogs).map((blog: any) => (
+                  <LiveBlogCard key={blog.uid} blog={blog} locale={locale} />
+                ))}
+              </div>
+            ) : (
+              <div className="content-empty">
+                <span>📡</span>
+                <h3>No live blogs yet</h3>
+                <p>Check back soon for live coverage.</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>

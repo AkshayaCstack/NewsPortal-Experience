@@ -1,7 +1,8 @@
-import { getArticleBySlug, getAllArticleSlugs, formatDate, jsonRteToHtml } from "@/helper";
+import { getArticleBySlug, getAllArticleSlugs, getAllArticles, formatDate, jsonRteToHtml, timeAgo } from "@/helper";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
+import ArticleInteractions from "@/components/article/ArticleInteractions";
 
 export const revalidate = 60;
 
@@ -50,11 +51,17 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ArticlePage({ params }: PageProps) {
   const { slug, locale } = await params;
-  const article = await getArticleBySlug(slug, locale);
+  const [article, allArticles] = await Promise.all([
+    getArticleBySlug(slug, locale),
+    getAllArticles(locale)
+  ]);
 
   if (!article) {
     notFound();
   }
+  
+  // Get latest articles (excluding current) for sidebar fallback
+  const latestArticles = allArticles?.filter((a: any) => a.uid !== slug).slice(0, 5) || [];
 
   // Get hero image
   const getHeroImage = () => {
@@ -170,74 +177,70 @@ export default async function ArticlePage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Share & Tags Section */}
-            <div className="article-footer">
-              <div className="share-section">
-                <span>Share this article:</span>
-                <div className="share-buttons">
-                  <button className="share-btn" title="Share on Twitter">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  </button>
-                  <button className="share-btn" title="Share on LinkedIn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                    </svg>
-                  </button>
-                  <button className="share-btn" title="Copy Link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* Interactions - Likes, Comments, Follow */}
+            <ArticleInteractions 
+              articleUid={article.uid}
+              author={author ? { uid: author.uid, name: author.name || author.title } : null}
+              category={category ? { uid: category.uid, name: category.name || category.title } : null}
+            />
           </article>
 
-          {/* Sidebar - Right Side (Related Articles Only) */}
+          {/* Sidebar - Right Side */}
           <aside className="article-sidebar">
-            {/* Related Articles */}
-            {relatedArticles.length > 0 && (
-              <div className="sidebar-related">
-                <h4 className="sidebar-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-                  </svg>
-                  Related Articles
-                </h4>
-                <div className="related-list">
-                  {relatedArticles.map((related: any) => {
-                    const relatedHeroImage = related.group?.find((g: any) => g.is_hero_image)?.image?.url 
-                      || related.group?.[0]?.image?.url;
-                    const relatedCategory = related.category?.[0];
-                    const relatedTitle = related.headline || related.title || 'Related Article';
-                    
-                    return (
-                      <Link 
-                        key={related.uid} 
-                        href={`/${locale}/news/${related.uid}`}
-                        className="related-item"
-                      >
-                        {relatedHeroImage && (
-                          <img src={relatedHeroImage} alt={relatedTitle} />
-                        )}
-                        <div className="related-item-content">
-                          {relatedCategory && (
-                            <span className="related-category">
-                              {relatedCategory.name || relatedCategory.title}
+            {/* Related Articles or Latest News */}
+            {(() => {
+              const sidebarArticles = relatedArticles.length > 0 ? relatedArticles : latestArticles;
+              const sidebarTitle = relatedArticles.length > 0 ? 'Related Stories' : 'Latest News';
+              
+              if (sidebarArticles.length === 0) return null;
+              
+              return (
+                <div className="sidebar-section">
+                  <h4 className="sidebar-title">{sidebarTitle}</h4>
+                  <div className="sidebar-articles">
+                    {sidebarArticles.slice(0, 5).map((item: any) => {
+                      const itemImage = item.group?.find((g: any) => g.is_hero_image)?.image?.url 
+                        || item.group?.[0]?.image?.url;
+                      const itemCategory = item.category?.[0];
+                      const itemTitle = item.headline || item.title;
+                      
+                      return (
+                        <Link 
+                          key={item.uid} 
+                          href={`/${locale}/news/${item.uid}`}
+                          className="sidebar-article"
+                        >
+                          {itemImage && (
+                            <div className="sidebar-article-img">
+                              <img src={itemImage} alt={itemTitle} />
+                            </div>
+                          )}
+                          <div className="sidebar-article-content">
+                            {itemCategory && (
+                              <span className="sidebar-article-category">
+                                {itemCategory.name || itemCategory.title}
+                              </span>
+                            )}
+                            <h5 className="sidebar-article-title">{itemTitle}</h5>
+                            <span className="sidebar-article-time">
+                              {timeAgo(item.published_date, locale)}
                             </span>
-                          )}
-                          <h5>{relatedTitle}</h5>
-                          {related.published_date && (
-                            <span className="related-date">{formatDate(related.published_date, locale)}</span>
-                          )}
-                        </div>
-                      </Link>
-                    );
-                  })}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
+              );
+            })()}
+            
+            {/* Category Follow Suggestion */}
+            {category && (
+              <div className="sidebar-section sidebar-category-box">
+                <h4 className="sidebar-title">More from {category.name || category.title}</h4>
+                <Link href={`/${locale}/category/${category.uid}`} className="sidebar-category-link">
+                  View all articles →
+                </Link>
               </div>
             )}
           </aside>

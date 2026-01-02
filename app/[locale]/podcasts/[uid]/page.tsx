@@ -2,6 +2,7 @@ import { getPodcastByUid, getAllPodcastUids, getEpisodesByPodcast, formatDate, f
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
+import ContentInteractions from "@/components/interactions/ContentInteractions";
 
 interface PageProps {
   params: Promise<{ uid: string; locale: string }>;
@@ -293,6 +294,14 @@ export default async function PodcastDetailPage({ params }: PageProps) {
             </div>
           )}
         </section>
+
+        {/* Interactions - Likes, Comments, Follow, Report */}
+        <ContentInteractions 
+          contentType="podcast"
+          contentUid={podcast.uid}
+          author={author ? { uid: author.uid, name: author.name || author.title } : null}
+          category={category ? { uid: category.uid, name: category.name || category.title } : null}
+        />
 
         {/* Tags/Taxonomies */}
         {podcast.taxonomies && podcast.taxonomies.length > 0 && (
