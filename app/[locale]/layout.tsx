@@ -39,38 +39,18 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <head>
-        {/* Lytics Analytics Script - Uses jstag object */}
+        {/* Lytics Analytics Script v3 - Official SDK */}
         {lyticsAccountId && (
           <Script
             id="lytics-jstag"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
-                !function(){
-                  var t=window.jstag=window.jstag||[];
-                  t.methods=["track","identify","page","ready"];
-                  t.factory=function(n){
-                    return function(){
-                      var e=Array.prototype.slice.call(arguments);
-                      e.unshift(n);
-                      t.push(e);
-                      return t;
-                    }
-                  };
-                  for(var n=0;n<t.methods.length;n++){
-                    var e=t.methods[n];
-                    t[e]=t.factory(e);
-                  }
-                  t.load=function(){
-                    var n=document.createElement("script");
-                    n.type="text/javascript";
-                    n.async=true;
-                    n.src="https://c.lytics.io/api/tag/${lyticsAccountId}/latest.min.js";
-                    var e=document.getElementsByTagName("script")[0];
-                    e.parentNode.insertBefore(n,e);
-                  };
-                  t.load();
-                }();
+                !function(){"use strict";var o=window.jstag||(window.jstag={}),r=[];function n(e){o[e]=function(){for(var n=arguments.length,t=new Array(n),i=0;i<n;i++)t[i]=arguments[i];r.push([e,t])}}n("send"),n("mock"),n("identify"),n("pageView"),n("unblock"),n("getid"),n("setid"),n("loadEntity"),n("getEntity"),n("on"),n("once"),n("call"),o.loadScript=function(n,t,i){var e=document.createElement("script");e.async=!0,e.src=n,e.onload=t,e.onerror=i;var o=document.getElementsByTagName("script")[0],r=o&&o.parentNode||document.head||document.body,c=o||r.lastChild;return null!=c?r.insertBefore(e,c):r.appendChild(e),this},o.init=function n(t){return this.config=t,this.loadScript(t.src,function(){if(o.init===n)throw new Error("Load error!");o.init(o.config),function(){for(var n=0;n<r.length;n++){var t=r[n][0],i=r[n][1];o[t].apply(o,i)}r=void 0}()}),this}}();
+                jstag.init({
+                  src: 'https://c.lytics.io/api/tag/${lyticsAccountId}/latest.min.js'
+                });
+                jstag.pageView();
               `,
             }}
           />

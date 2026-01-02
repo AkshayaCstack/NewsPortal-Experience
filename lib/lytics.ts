@@ -3,14 +3,22 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-// Extend Window interface for Lytics (correct object is jstag, NOT lytics)
+// Extend Window interface for Lytics SDK v3
+// Official methods: send, identify, pageView, on, once, getid, setid, etc.
 declare global {
   interface Window {
     jstag?: {
-      track: (event: string, data?: Record<string, any>) => void;
+      send: (event: string, data?: Record<string, any>) => void;
       identify: (data: Record<string, any>) => void;
-      page: (data?: Record<string, any>) => void;
-      ready: (callback: () => void) => void;
+      pageView: (data?: Record<string, any>) => void;
+      on: (event: string, callback: () => void) => void;
+      once: (event: string, callback: () => void) => void;
+      getid: () => string | null;
+      setid: (id: string) => void;
+      loadEntity: (entityType: string, entityId: string, callback?: (entity: any) => void) => void;
+      getEntity: (entityType: string, entityId: string) => any;
+      call: (method: string, ...args: any[]) => any;
+      config?: Record<string, any>;
     };
   }
 }
@@ -22,6 +30,7 @@ declare global {
 /**
  * Track page views - fires on route change (not just mount)
  * Uses usePathname() to detect client-side navigation
+ * Uses jstag.pageView() - the official v3 method
  */
 export function usePageTracking(pageData?: {
   page_type?: string;
@@ -31,8 +40,9 @@ export function usePageTracking(pageData?: {
   const pathname = usePathname();
 
   useEffect(() => {
-    window.jstag?.page({
+    window.jstag?.pageView({
       path: pathname,
+      url: typeof window !== 'undefined' ? window.location.href : '',
       ...pageData,
     });
   }, [pathname]); // Re-fires on every route change
@@ -58,12 +68,13 @@ interface ContentViewData {
 /**
  * Track content views (articles, videos, podcasts, etc.)
  * This is the core event for interest detection
+ * Uses jstag.send() - the official v3 method for custom events
  */
 export function useContentTracking(content: ContentViewData | null) {
   useEffect(() => {
     if (!content) return;
 
-    window.jstag?.track("content_view", {
+    window.jstag?.send("content_view", {
       content_id: content.content_id,
       content_type: content.content_type,
       title: content.title,
@@ -103,7 +114,7 @@ export function useEngagementTracking({
     if (!content_id) return;
 
     const timer = setTimeout(() => {
-      window.jstag?.track("content_engaged", {
+      window.jstag?.send("content_engaged", {
         content_id,
         content_type,
         duration: engagementThreshold,
@@ -146,7 +157,7 @@ export function useScrollDepthTracking(content_id: string, content_type: string)
       [25, 50, 75, 100].forEach((milestone) => {
         if (scrollPercent >= milestone && !milestones.current.has(milestone)) {
           milestones.current.add(milestone);
-          window.jstag?.track("scroll_depth", {
+          window.jstag?.send("scroll_depth", {
             content_id,
             content_type,
             depth: milestone,
@@ -176,34 +187,28 @@ interface UserIdentifyData {
 
 /**
  * Identify user after login - connects anonymous to known user
- * Uses jstag.ready() to ensure Lytics is loaded before identifying
+ * Uses jstag.identify() with on() callback to ensure SDK is ready
  */
 export function identifyUser(userData: UserIdentifyData) {
-  // Wait for Lytics to be ready before identifying
-  if (window.jstag?.ready) {
-    window.jstag.ready(() => {
-      window.jstag?.identify({
-        user_id: userData.user_id,
-        email: userData.email,
-        name: userData.name,
-        subscribed: userData.is_subscribed,
-        subscription_tier: userData.subscription_tier,
-        locale: userData.locale,
-        identified_at: new Date().toISOString(),
-      });
-    });
-  } else {
-    // Fallback: try direct identify (may queue if script loading)
-    window.jstag?.identify({
-      user_id: userData.user_id,
-      email: userData.email,
-      name: userData.name,
-      subscribed: userData.is_subscribed,
-      subscription_tier: userData.subscription_tier,
-      locale: userData.locale,
-      identified_at: new Date().toISOString(),
+  const identifyPayload = {
+    user_id: userData.user_id,
+    email: userData.email,
+    name: userData.name,
+    subscribed: userData.is_subscribed,
+    subscription_tier: userData.subscription_tier,
+    locale: userData.locale,
+    identified_at: new Date().toISOString(),
+  };
+
+  // Use once() to wait for SDK ready, or call directly if already loaded
+  if (window.jstag?.once) {
+    window.jstag.once("ready", () => {
+      window.jstag?.identify(identifyPayload);
     });
   }
+  
+  // Also try direct identify in case SDK is already loaded
+  window.jstag?.identify(identifyPayload);
 }
 
 // ============================================
@@ -229,12 +234,13 @@ type NormalizedEventName =
 
 /**
  * Track normalized events with consistent payload structure
+ * Uses jstag.send() - the official v3 method
  */
 export function trackEvent(
   eventName: NormalizedEventName, 
   data?: Record<string, any>
 ) {
-  window.jstag?.track(eventName, {
+  window.jstag?.send(eventName, {
     ...data,
     timestamp: new Date().toISOString(),
   });
