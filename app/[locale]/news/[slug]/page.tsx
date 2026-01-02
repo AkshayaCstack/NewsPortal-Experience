@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
+import ContentTracker from "@/components/analytics/ContentTracker";
 
 export const revalidate = 60;
 
@@ -97,6 +98,19 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <main className="article-detail-page">
+      {/* Lytics Content Tracking */}
+      <ContentTracker
+        contentId={article.uid}
+        contentType="news_article"
+        title={articleTitle}
+        category={category?.name || category?.title}
+        author={author?.name || author?.title}
+        locale={locale}
+        isFeatured={article.is_breaking}
+        isPremium={article.is_premium}
+        tags={article.tags?.map((t: any) => t.title || t.name)}
+      />
+
       {/* Back Navigation */}
       <div className="article-back-nav">
         <div className="container">

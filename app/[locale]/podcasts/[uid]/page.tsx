@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentInteractions from "@/components/interactions/ContentInteractions";
+import ContentTracker from "@/components/analytics/ContentTracker";
 
 interface PageProps {
   params: Promise<{ uid: string; locale: string }>;
@@ -50,6 +51,18 @@ export default async function PodcastDetailPage({ params }: PageProps) {
 
   return (
     <main className="podcast-detail-page">
+      {/* Lytics Content Tracking */}
+      <ContentTracker
+        contentId={podcast.uid}
+        contentType="podcast"
+        title={podcast.title}
+        category={category?.title || category?.name}
+        author={author?.name || author?.title}
+        locale={locale}
+        isFeatured={podcast.is_featured}
+        isPremium={false}
+      />
+
       <div className="container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">

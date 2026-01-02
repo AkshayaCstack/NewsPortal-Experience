@@ -11,6 +11,7 @@ import {
   jsonRteToText 
 } from '@/helper';
 import ContentInteractions from '@/components/interactions/ContentInteractions';
+import ContentTracker from '@/components/analytics/ContentTracker';
 
 // Source icons and labels
 const sourceConfig: Record<string, { label: string; icon: string; color: string }> = {
@@ -111,6 +112,18 @@ export default async function LiveBlogPage({ params }: PageProps) {
 
   return (
     <main className="liveblog-page">
+      {/* Lytics Content Tracking */}
+      <ContentTracker
+        contentId={liveBlog.uid}
+        contentType="live_blog"
+        title={liveBlog.title}
+        category={category?.title || category?.name}
+        author={author?.name || author?.title}
+        locale={locale}
+        isFeatured={false}
+        isPremium={false}
+      />
+
       {/* Back Navigation */}
       <nav className="liveblog-nav">
         <div className="container">

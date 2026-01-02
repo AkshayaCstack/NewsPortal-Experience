@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
+import { identifyUser } from '@/lib/lytics';
 
 interface AuthContextType {
   user: User | null;
@@ -79,12 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
         fetchSubscription(session.user.id);
+        
+        // Identify returning user in Lytics
+        identifyUser({
+          user_id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name,
+        });
       }
       setLoading(false);
     });
@@ -111,6 +119,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 avatar_url: session.user.user_metadata?.avatar_url || null
               });
             }
+
+            // Identify user in Lytics for analytics
+            identifyUser({
+              user_id: session.user.id,
+              email: session.user.email,
+              name: session.user.user_metadata?.full_name,
+            });
           }
           fetchProfile(session.user.id);
           fetchSubscription(session.user.id);

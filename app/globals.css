@@ -1458,12 +1458,26 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   z-index: 1;
 }
 
+/* Newsletter Cards Grid */
+.newsletter-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.newsletter-cards-grid:has(.home-newsletter-card:only-child) {
+  grid-template-columns: 1fr;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
 .home-newsletter-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 40px;
-  padding: 48px;
+  gap: 24px;
+  padding: 40px;
   background: var(--gradient-card);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-xl);
@@ -1567,6 +1581,50 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.5);
 }
 
+/* Signin Card Styles */
+.signin-card {
+  background: linear-gradient(145deg, #1e3a5f 0%, #1a2d47 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.signin-card::before {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+}
+
+.home-newsletter-icon.signin {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.signin-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.signin-btn:hover {
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+}
+
+/* Premium Card Styles */
+.premium-card {
+  background: linear-gradient(145deg, #3d2b5a 0%, #2d1f42 100%);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.premium-card::before {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
+}
+
+.home-newsletter-icon.premium {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+}
+
+.premium-btn {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+}
+
+.premium-btn:hover {
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.5);
+}
+
 /* Homepage Responsive */
 @media (max-width: 1200px) {
   .editors-pick-grid {
@@ -1583,10 +1641,13 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
     grid-template-columns: repeat(2, 1fr);
   }
   
+  .newsletter-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .home-newsletter-card {
-    flex-direction: column;
     text-align: center;
-    gap: 24px;
+    align-items: center;
   }
   
   .home-newsletter-content {

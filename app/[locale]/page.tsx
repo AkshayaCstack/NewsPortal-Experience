@@ -45,6 +45,15 @@ export default async function HomePage({ params }: PageProps) {
   // Get authors from CMS
   const authorsSection = page.components?.find((block: any) => block.authors_section)?.authors_section;
 
+  // Get Newsletter cards from CMS
+  const signinCard = page.components?.find((block: any) => 
+    block.get_started___signin
+  )?.get_started___signin;
+  
+  const newsletterCard = page.components?.find((block: any) => 
+    block.newsletter_card
+  )?.newsletter_card;
+
   // Exclude breaking news from latest articles
   const breakingUids = breakingArticles?.map((a: any) => a.uid) || [];
   const latestArticles = allArticles?.filter((a: any) => !breakingUids.includes(a.uid)) || [];
@@ -95,8 +104,11 @@ export default async function HomePage({ params }: PageProps) {
         locale={locale}
       />
 
-      {/* Newsletter */}
-      <Newsletter />
+      {/* Newsletter / CTA Cards */}
+      <Newsletter 
+        signinCard={signinCard}
+        newsletterCard={newsletterCard}
+      />
     </main>
   );
 }

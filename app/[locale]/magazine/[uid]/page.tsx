@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentInteractions from "@/components/interactions/ContentInteractions";
+import ContentTracker from "@/components/analytics/ContentTracker";
 
 interface PageProps {
   params: Promise<{ uid: string; locale: string }>;
@@ -52,6 +53,18 @@ export default async function MagazineDetailPage({ params }: PageProps) {
 
   return (
     <main className="magazine-detail-page">
+      {/* Lytics Content Tracking */}
+      <ContentTracker
+        contentId={magazine.uid}
+        contentType="magazine"
+        title={magazine.title}
+        category={category?.title || category?.name}
+        author={author?.name || author?.title}
+        locale={locale}
+        isFeatured={false}
+        isPremium={isPremium}
+      />
+
       <div className="container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">
