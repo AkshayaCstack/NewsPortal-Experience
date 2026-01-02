@@ -17,6 +17,8 @@ interface AuthContextType {
   subscription: Subscription | null;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
+  showAuthModal: boolean;
+  setShowAuthModal: (value: boolean) => void;
 }
 
 interface Profile {
@@ -42,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -190,6 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signInWithGoogle,
+      showAuthModal,
+      setShowAuthModal,
+
       signOut,
       profile,
       subscription,
