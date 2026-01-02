@@ -39,15 +39,15 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <head>
-        {/* Lytics Analytics Script */}
+        {/* Lytics Analytics Script - Uses jstag object */}
         {lyticsAccountId && (
           <Script
-            id="lytics"
+            id="lytics-jstag"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
                 !function(){
-                  var t=window.lytics=window.lytics||[];
+                  var t=window.jstag=window.jstag||[];
                   t.methods=["track","identify","page","ready"];
                   t.factory=function(n){
                     return function(){

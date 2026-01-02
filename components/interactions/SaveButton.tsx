@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { trackEvent } from '@/lib/lytics';
+import { trackContentSave } from '@/lib/lytics';
 
 interface SaveButtonProps {
   contentTypeUid: string;
@@ -67,12 +67,9 @@ export default function SaveButton({
       const data = await res.json();
       setIsSaved(data.saved);
       
-      // Track save event in Lytics
+      // Track save event in Lytics (normalized event name)
       if (data.saved) {
-        trackEvent('article_saved', {
-          content_id: entryUid,
-          content_type: contentTypeUid,
-        });
+        trackContentSave(entryUid, contentTypeUid);
       }
     } catch (error) {
       // Revert on error

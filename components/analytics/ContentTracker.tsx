@@ -1,6 +1,6 @@
 "use client";
 
-import { useFullContentTracking, trackEvent } from "@/lib/lytics";
+import { useFullContentTracking, trackContentLike, trackContentSave } from "@/lib/lytics";
 import { useEffect } from "react";
 
 interface ContentTrackerProps {
@@ -13,6 +13,7 @@ interface ContentTrackerProps {
   isFeatured?: boolean;
   isPremium?: boolean;
   tags?: string[];
+  topics?: string[]; // Explicit topics for better Lytics affinity scoring
   engagementThreshold?: number;
   trackScrollDepth?: boolean;
 }
@@ -20,6 +21,12 @@ interface ContentTrackerProps {
 /**
  * Client component that wraps content pages to provide Lytics tracking
  * Use this in server components by rendering it alongside the content
+ * 
+ * Tracks:
+ * - Page views (on route change)
+ * - Content views (with category/topics for affinity)
+ * - Engagement (after threshold seconds)
+ * - Scroll depth (at 25%, 50%, 75%, 100%)
  */
 export default function ContentTracker({
   contentId,
@@ -31,9 +38,16 @@ export default function ContentTracker({
   isFeatured = false,
   isPremium = false,
   tags = [],
+  topics,
   engagementThreshold = 60,
   trackScrollDepth = true,
 }: ContentTrackerProps) {
+  // Build topics array: explicit topics, or fallback to category + tags
+  const derivedTopics = topics || [
+    ...(category ? [category] : []),
+    ...tags.slice(0, 5), // Include up to 5 tags as topics
+  ].filter(Boolean);
+
   // Use the combined tracking hook
   useFullContentTracking({
     content: {
@@ -46,6 +60,7 @@ export default function ContentTracker({
       is_featured: isFeatured,
       is_premium: isPremium,
       tags,
+      topics: derivedTopics,
     },
     engagementThreshold,
     trackScrollDepth,
@@ -64,13 +79,12 @@ interface LikeTrackerProps {
   contentType: string;
 }
 
+/**
+ * Component to track like events (mount-based)
+ */
 export function LikeTracker({ contentId, contentType }: LikeTrackerProps) {
   useEffect(() => {
-    // This is called when the component mounts (after like action)
-    trackEvent("article_liked", {
-      content_id: contentId,
-      content_type: contentType,
-    });
+    trackContentLike(contentId, contentType);
   }, [contentId, contentType]);
 
   return null;
@@ -81,14 +95,13 @@ interface SaveTrackerProps {
   contentType: string;
 }
 
+/**
+ * Component to track save events (mount-based)
+ */
 export function SaveTracker({ contentId, contentType }: SaveTrackerProps) {
   useEffect(() => {
-    trackEvent("article_saved", {
-      content_id: contentId,
-      content_type: contentType,
-    });
+    trackContentSave(contentId, contentType);
   }, [contentId, contentType]);
 
   return null;
 }
-

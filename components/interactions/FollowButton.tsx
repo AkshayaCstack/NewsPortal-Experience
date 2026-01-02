@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { trackEvent } from '@/lib/lytics';
+import { trackEntityFollow } from '@/lib/lytics';
 
 interface FollowButtonProps {
   targetType: 'author' | 'category';
@@ -95,12 +95,8 @@ export default function FollowButton({
         setFollowing(true);
         setFollowerCount(prev => prev + 1);
         
-        // Track follow event in Lytics
-        trackEvent(targetType === 'author' ? 'author_followed' : 'category_followed', {
-          target_id: targetEntryId,
-          target_type: targetType,
-          target_name: targetName,
-        });
+        // Track follow event in Lytics (normalized event name)
+        trackEntityFollow(targetType, targetEntryId, targetName);
       }
     } catch (error) {
       console.error('Error toggling follow:', error);

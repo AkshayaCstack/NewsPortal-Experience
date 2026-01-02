@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { trackEvent } from '@/lib/lytics';
+import { trackContentLike } from '@/lib/lytics';
 
 interface LikeButtonProps {
   contentTypeUid: string;
@@ -80,12 +80,9 @@ export default function LikeButton({
       setLiked(data.liked);
       setCount(prev => data.liked ? prev + 1 : prev - 1);
       
-      // Track like event in Lytics
+      // Track like event in Lytics (normalized event name)
       if (data.liked) {
-        trackEvent('article_liked', {
-          content_id: entryUid,
-          content_type: contentTypeUid,
-        });
+        trackContentLike(entryUid, contentTypeUid);
       }
     } catch (error) {
       console.error('Error toggling like:', error);
