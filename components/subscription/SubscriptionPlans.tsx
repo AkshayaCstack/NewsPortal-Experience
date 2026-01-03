@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { trackEvent } from '@/lib/lytics';
 
 interface Plan {
   id: string;
@@ -87,6 +88,15 @@ export default function SubscriptionPlans({ onAuthRequired, onClose }: Subscript
 
       if (response.ok) {
         await refreshSubscription();
+        
+        // Track subscription event for Lytics audience segmentation
+        trackEvent("subscription_started", {
+          plan: planId,
+          plan_name: plans.find(p => p.id === planId)?.name,
+          price: plans.find(p => p.id === planId)?.price,
+          user_id: user.id,
+        });
+        
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);

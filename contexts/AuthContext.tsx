@@ -146,6 +146,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Re-identify user with subscription data whenever subscription changes
+  // This ensures Lytics has accurate subscription status for segmentation
+  useEffect(() => {
+    if (user && !loading && subscription !== undefined) {
+      identifyUser({
+        user_id: user.id,
+        email: user.email,
+        name: profile?.name || user.user_metadata?.full_name,
+        is_subscribed: !!subscription && subscription.status === 'active',
+        subscription_tier: subscription?.plan || 'free',
+      });
+    }
+  }, [user, subscription, profile, loading]);
+
   const signUp = async (email: string, password: string, name: string) => {
     const { error } = await supabase.auth.signUp({
       email,
