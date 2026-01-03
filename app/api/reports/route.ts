@@ -1,15 +1,36 @@
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
-  const { user_id, content_type_uid, entry_uid, reason } = await req.json()
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  await supabase.from('reports').insert({
-    user_id,
-    content_type_uid,
-    entry_uid,
-    reason
-  })
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  return NextResponse.json({ reported: true })
+    const { content_type_uid, entry_uid, reason } = await req.json();
+
+    if (!entry_uid || !reason) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const { error } = await supabase.from('reports').insert({
+      user_id: user.id, // Use authenticated user's ID
+      content_type_uid,
+      entry_uid,
+      reason
+    });
+
+    if (error) {
+      console.error('Error creating report:', error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ reported: true });
+  } catch (err) {
+    console.error('Error in POST /api/reports:', err);
+    return NextResponse.json({ error: 'Failed to submit report' }, { status: 500 });
+  }
 }
