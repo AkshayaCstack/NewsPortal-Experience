@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 
 interface CardData {
   title?: string;
@@ -17,6 +19,7 @@ interface NewsletterProps {
 
 export default function Newsletter({ signinCard, newsletterCard, onGetStarted, onUpgrade }: NewsletterProps) {
   const { user, setShowAuthModal } = useAuth();
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const handleGetStarted = () => {
     if (onGetStarted) {
@@ -29,11 +32,14 @@ export default function Newsletter({ signinCard, newsletterCard, onGetStarted, o
   const handleUpgrade = () => {
     if (onUpgrade) {
       onUpgrade();
+    } else {
+      // Open subscription modal
+      setShowSubscriptionModal(true);
     }
-    // For now, could open subscription modal or navigate to subscription page
   };
 
   return (
+    <>
     <section className="home-newsletter-section">
       <div className="container">
         <div className="newsletter-cards-grid">
@@ -94,6 +100,17 @@ export default function Newsletter({ signinCard, newsletterCard, onGetStarted, o
         </div>
       </div>
     </section>
+
+    {/* Subscription Modal */}
+    <SubscriptionModal 
+      isOpen={showSubscriptionModal}
+      onClose={() => setShowSubscriptionModal(false)}
+      onAuthRequired={() => {
+        setShowSubscriptionModal(false);
+        setShowAuthModal(true);
+      }}
+    />
+    </>
   );
 }
 

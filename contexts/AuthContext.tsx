@@ -178,12 +178,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.clear();
-  sessionStorage.clear();
-  window.location.reload();
-    setProfile(null);
-    setSubscription(null);
+    try {
+      await supabase.auth.signOut();
+      
+      // Clear state first
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setSubscription(null);
+      
+      // Clear storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Reload last (small delay to ensure cleanup)
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force reload on error
+      window.location.href = '/';
+    }
   };
 
   return (
