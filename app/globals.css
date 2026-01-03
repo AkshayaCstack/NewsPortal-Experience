@@ -1581,26 +1581,26 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.5);
 }
 
-/* Signin Card Styles */
+/* Signin Card Styles - Purple Theme (matching site theme) */
 .signin-card {
-  background: linear-gradient(145deg, #1e3a5f 0%, #1a2d47 100%);
-  border-color: rgba(59, 130, 246, 0.3);
+  background: linear-gradient(145deg, #2d2352 0%, #1e1736 100%);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .signin-card::before {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
 }
 
 .home-newsletter-icon.signin {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .signin-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .signin-btn:hover {
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
 }
 
 /* Premium Card Styles */
@@ -12883,5 +12883,230 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   .unfollow-btn {
     width: 100%;
     margin-top: 12px;
+  }
+}
+
+/* ======================================
+   OFFER SECTION (Personalized)
+====================================== */
+.offer-section {
+  padding: 40px 0;
+}
+
+.offer-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-bg-secondary) 50%, var(--color-card) 100%);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 0 60px rgba(124, 58, 237, 0.3);
+  overflow: hidden;
+}
+
+.offer-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 14px;
+  animation: pulse-badge 2s ease-in-out infinite;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.offer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.offer-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: float-icon 3s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.offer-text h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--color-text), var(--color-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.offer-text p {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+  max-width: 400px;
+}
+
+.offer-pricing {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.original-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.original-price .strikethrough {
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.original-price .label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.discounted-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.discounted-price .price {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--color-success);
+}
+
+.discounted-price .label {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.offer-cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+}
+
+.offer-cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(124, 58, 237, 0.5);
+}
+
+.offer-cta-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.offer-cta-btn:hover svg {
+  transform: translateX(4px);
+}
+
+.offer-decoration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 24px;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.sparkle-2 {
+  top: 30%;
+  right: 10%;
+  animation-delay: 0.7s;
+}
+
+.sparkle-3 {
+  bottom: 15%;
+  left: 15%;
+  animation-delay: 1.4s;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(15deg);
+  }
+}
+
+/* Responsive offer section */
+@media (max-width: 768px) {
+  .offer-card {
+    padding: 30px 20px;
+  }
+  
+  .offer-badge {
+    position: static;
+    margin-bottom: 16px;
+  }
+  
+  .offer-text h2 {
+    font-size: 1.5rem;
+  }
+  
+  .offer-pricing {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .discounted-price .price {
+    font-size: 2rem;
   }
 }

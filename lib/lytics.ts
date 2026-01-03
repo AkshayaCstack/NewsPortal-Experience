@@ -211,6 +211,29 @@ export function identifyUser(userData: UserIdentifyData) {
   window.jstag?.identify(identifyPayload);
 }
 
+/**
+ * Reset Lytics user to anonymous state
+ * Called on sign out to clear user identity
+ * This tells Lytics to treat subsequent events as a new anonymous user
+ */
+export function resetLyticsUser() {
+  try {
+    // Send an anonymous identify to reset user traits
+    // This clears the user's identity in Lytics
+    if (window.jstag?.identify) {
+      window.jstag.identify({
+        user_id: null,
+        email: null,
+        subscribed: false,
+        subscription_tier: null,
+      });
+    }
+  } catch (error) {
+    // Silently fail - resetting Lytics shouldn't break sign out
+    console.warn('[Lytics] Error resetting user:', error);
+  }
+}
+
 // ============================================
 // NORMALIZED EVENT TRACKING
 // ============================================

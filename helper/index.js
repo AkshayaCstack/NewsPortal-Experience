@@ -1,26 +1,50 @@
 import Stack from "@/contentstack-sdk";
+import Personalize from "@contentstack/personalize-edge-sdk";
 
 // Default locale
 const DEFAULT_LOCALE = 'en-us';
 
 /* -------------------------
-   PAGE (by URL)
+   HELPER: Convert variant param to aliases
 -------------------------- */
-export async function getPageByURL(url, locale = DEFAULT_LOCALE) {
+function getVariantAliases(variantParam) {
+  if (!variantParam) return [];
+  // Use the SDK's built-in converter
+  return Personalize.variantParamToVariantAliases(variantParam);
+}
+
+/* -------------------------
+   PAGE (by URL) - Supports Personalization Variants
+-------------------------- */
+export async function getPageByURL(url, locale = DEFAULT_LOCALE, variantParam = null) {
   try {
-    const Query = Stack.ContentType("page")
+    let Query = Stack.ContentType("page")
       .Query()
       .language(locale)
       .where("url", url)
       .includeReference([
         "components.category_section.category.reference",
         "components.authors_section.author.reference"
-      ])
-      .toJSON();
+      ]);
 
-    const result = await Query.find();
+    if (variantParam) {
+      // Ensure it's an array for the .variants() method
+      const aliases = typeof variantParam === 'string'
+        ? variantParam.split(',') 
+        : variantParam;
+      
+      console.log('[Personalize Helper] Fetching with variant aliases:', aliases);
+      
+      // The SDK .variants() method applies the x-cs-variant-uid header automatically
+      Query = Query.variants(aliases); 
+    } else {
+      console.log('[Personalize Helper] No variant param, fetching base entry');
+    }
+
+    const result = await Query.toJSON().find();
     return result[0]?.[0];
-  } catch (error) {
+  
+} catch (error) {
     console.error('Error fetching page:', error);
     return null;
   }

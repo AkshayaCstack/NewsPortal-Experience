@@ -4,6 +4,7 @@ import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import ContentTracker from "@/components/analytics/ContentTracker";
+import FollowButton from "@/components/interactions/FollowButton";
 
 export const revalidate = 60;
 
@@ -151,7 +152,13 @@ export default async function ArticlePage({ params }: PageProps) {
                   <Link href={`/${locale}/author/${author.uid}`} className="author-name-link">
                     {author.name || author.title}
                   </Link>
-                  <button className="subscribe-btn">Subscribe</button>
+                  <FollowButton 
+                    targetType="author"
+                    targetEntryId={author.uid}
+                    targetName={author.name || author.title}
+                    variant="minimal"
+                    size="sm"
+                  />
                 </div>
               )}
             </div>
