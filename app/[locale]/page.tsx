@@ -11,31 +11,15 @@ export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ variant?: string; variantUid?: string }>;
+  searchParams: Promise<{ variant?: string }>;
 }
 
 export default async function HomePage({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  const { variant, variantUid } = await searchParams;
-  
-  // Determine which variant to show based on variantUid from Personalize SDK
-  // The SDK returns activeVariantShortUid which maps to your Contentstack experience variants:
-  //   - variantUid '0' = First variant (Anonymous Promo - for anonymous users)
-  //   - variantUid '1' = Second variant (Subscription Offer - for logged-in unsubscribed users)
-  //   - null/undefined = Base entry (no personalization)
-  let activeVariant: 'subscription_offer' | 'anonymous_promo' | null = null;
-  
-  if (variantUid === '0') {
-    activeVariant = 'anonymous_promo';
-  } else if (variantUid === '1') {
-    activeVariant = 'subscription_offer';
-  }
-  
-  console.log('[Personalize] Variant param:', variant);
-  console.log('[Personalize] VariantUid param:', variantUid);
-  console.log('[Personalize] Active Variant:', activeVariant);
+  const { variant } = await searchParams;
   
   // Fetch page with personalization variant if available
+  // The CMS decides what components to return based on the variant
   const [page, breakingArticles, allArticles, featuredPodcasts, featuredVideos, magazines] = await Promise.all([
     getPageByURL("/", locale, variant || null),
     getBreakingNews(locale),
@@ -67,29 +51,29 @@ export default async function HomePage({ params, searchParams }: PageProps) {
   // Get authors from CMS
   const authorsSection = page.components?.find((block: any) => block.authors_section)?.authors_section;
 
-  // Get Newsletter cards from CMS (for anonymous users)
-  const signinCardBlock = page.components?.find((block: any) => {
+  // ============================================
+  // RENDER ONLY WHAT CMS RETURNS
+  // CMS is the source of truth for personalization
+  // React is a dumb renderer
+  // ============================================
+
+  // Find Offer Section block if CMS included it
+  const offerBlock = page.components?.find(
+    (block: any) => block.offer_section
+  )?.offer_section;
+
+  // Find Sign-in card block if CMS included it
+  const signinBlock = page.components?.find((block: any) => {
     const keys = Object.keys(block);
     return keys.some(k => k.includes('get_started') || k.includes('signin') || k.includes('sign_in'));
   });
-  const signinCard = signinCardBlock ? Object.values(signinCardBlock)[0] : undefined;
-  
-  const newsletterCardBlock = page.components?.find((block: any) => 
+  const signinCard = signinBlock ? Object.values(signinBlock)[0] : undefined;
+
+  // Find Newsletter card block
+  const newsletterBlock = page.components?.find((block: any) => 
     block.newsletter_card
   );
-  const newsletterCard = newsletterCardBlock?.newsletter_card;
-
-  // Get Offer Section from CMS (for unsubscribed users)
-  const offerSectionBlock = page.components?.find((block: any) => {
-    const keys = Object.keys(block);
-    return keys.some(k => k.includes('offer_section') || k.includes('offer'));
-  });
-  const offerData = offerSectionBlock ? Object.values(offerSectionBlock)[0] as any : undefined;
-
-  // Debug logging
-  console.log('[Personalize] All component keys:', page.components?.map((c: any) => Object.keys(c)));
-  console.log('[Personalize] Signin card found:', !!signinCard);
-  console.log('[Personalize] Offer section found:', !!offerData);
+  const newsletterCard = newsletterBlock?.newsletter_card;
 
   // Exclude breaking news from latest articles
   const breakingUids = breakingArticles?.map((a: any) => a.uid) || [];
@@ -106,9 +90,9 @@ export default async function HomePage({ params, searchParams }: PageProps) {
         <div className="container">
           <div className="hero-split-grid">
             <div className="hero-main-content">
-      {breakingArticles && breakingArticles.length > 0 && (
-        <BreakingNews articles={breakingArticles} title="Breaking" locale={locale} />
-      )}
+              {breakingArticles && breakingArticles.length > 0 && (
+                <BreakingNews articles={breakingArticles} title="Breaking" locale={locale} />
+              )}
             </div>
             <div className="hero-sidebar">
               <LatestPopularSidebar 
@@ -123,12 +107,12 @@ export default async function HomePage({ params, searchParams }: PageProps) {
 
       {/* Authors Section */}
       {authorsSection && (
-            <AuthorsSection
+        <AuthorsSection
           data={authorsSection.author} 
-              title={topWritersHero?.title}
-              description={topWritersHero?.text_area}
-              locale={locale}
-            />
+          title={topWritersHero?.title}
+          description={topWritersHero?.text_area}
+          locale={locale}
+        />
       )}
 
       {/* Featured Posts */}
@@ -139,34 +123,32 @@ export default async function HomePage({ params, searchParams }: PageProps) {
         locale={locale}
       />
 
-      {/* ================================================
-          PERSONALIZED CONTENT - VARIANT-DRIVEN RENDERING
-          ================================================ */}
+      {/* ============================================
+          PERSONALIZED CONTENT - CMS-DRIVEN RENDERING
+          Render ONLY what CMS returns in the variant
+          ============================================ */}
       
-      {/* Subscription Offer - ONLY for subscription_offer variant */}
-      {activeVariant === 'subscription_offer' && offerData && (
+      {/* Offer Section - rendered if CMS included it in the variant */}
+      {offerBlock && (
         <OfferSection
-          title={offerData.title}
-          description={offerData.description}
-          discountPercent={offerData.discount_percent}
-          price={offerData.price}
+          title={offerBlock.title}
+          description={offerBlock.description}
+          discountPercent={offerBlock.discount_percent}
+          price={offerBlock.price}
         />
       )}
 
-      {/* Sign-in / Get Started - ONLY for anonymous_promo variant */}
-      {activeVariant === 'anonymous_promo' && signinCard && (
+      {/* Sign-in section - rendered if CMS included it in the variant */}
+      {signinCard && (
         <Newsletter 
           signinCard={signinCard}
           newsletterCard={newsletterCard}
         />
       )}
 
-      {/* Default Newsletter - When no variant is active (base entry) */}
-      {!activeVariant && (
-        <Newsletter 
-          signinCard={undefined}
-          newsletterCard={newsletterCard}
-        />
+      {/* Default Newsletter - only when no signin card (base entry or subscribed user) */}
+      {!signinCard && newsletterCard && (
+        <Newsletter newsletterCard={newsletterCard} />
       )}
     </main>
   );
