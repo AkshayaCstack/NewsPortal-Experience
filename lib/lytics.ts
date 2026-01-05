@@ -212,26 +212,166 @@ export function identifyUser(userData: UserIdentifyData) {
 }
 
 /**
- * Reset Lytics user to anonymous state
- * Called on sign out to clear user identity
- * This tells Lytics to treat subsequent events as a new anonymous user
+ * Reset Lytics user to anonymous state and trigger re-evaluation
+ * Called on sign out to clear user identity and get fresh anonymous audiences
+ * 
+ * This approach asks Lytics to:
+ * 1. Clear the current user ID (generates new anonymous ID)
+ * 2. Send an identify with anonymous traits
+ * 3. Trigger a pageView to re-evaluate audiences
+ * 4. Lytics will naturally update its cookies with new anonymous state
  */
 export function resetLyticsUser() {
+  if (typeof window === 'undefined' || !window.jstag) {
+    console.warn('[Lytics] SDK not available');
+    return;
+  }
+
   try {
-    // Send an anonymous identify to reset user traits
-    // This clears the user's identity in Lytics
-    if (window.jstag?.identify) {
-      window.jstag.identify({
-        user_id: null,
-        email: null,
-        subscribed: false,
-        subscription_tier: null,
-      });
-    }
+    console.log('[Lytics] Resetting user to anonymous state...');
+    
+    // Clear the Lytics cookies directly so next page load gets fresh anonymous session
+    // The SDK will generate new anonymous cookies on the next request
+    const cookiesToClear = ['seerid', 'seerses', 'seession', 'ly_segs'];
+    cookiesToClear.forEach(name => {
+      // Clear for current domain
+      document.cookie = `${name}=; path=/; max-age=0`;
+      document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      // Clear for domain with dot prefix
+      const domain = window.location.hostname;
+      document.cookie = `${name}=; path=/; domain=${domain}; max-age=0`;
+      document.cookie = `${name}=; path=/; domain=.${domain}; max-age=0`;
+    });
+    console.log('[Lytics] Cleared Lytics cookies');
+    
+    // DON'T send null identify - this doesn't properly reset audiences
+    // DON'T send pageView here - it might recreate cookies before reload
+    // The page reload will naturally trigger fresh Lytics session
+    
+    // Clear Contentstack Personalize cached state
+    clearPersonalizeCookies();
+    
+    console.log('[Lytics] User reset complete - will be anonymous on next request');
+    
   } catch (error) {
-    // Silently fail - resetting Lytics shouldn't break sign out
     console.warn('[Lytics] Error resetting user:', error);
   }
+}
+
+/**
+ * Aggressively clear ALL personalization-related cookies
+ * Handles various path/domain combinations
+ */
+function clearPersonalizeCookies() {
+  if (typeof document === 'undefined') return;
+  
+  // All cookies that might be set by Lytics or Personalize
+  const cookiesToClear = [
+    // Lytics cookies
+    'seerid',
+    'seerses',
+    'seession',
+    'ly_segs',
+    // Contentstack Personalize cookies (these store audience/variant cache)
+    'cs-personalize-manifest',
+    'cs-personalize-user-uid', 
+    'cs-personalize-user-id',
+    'cs-lytics-audiences',  // This stores the audience membership!
+    'cs-lytics-flows',
+    'cs_user_subscribed',
+  ];
+  
+  const hostname = window.location.hostname;
+  
+  // Try multiple domain variations
+  const domains = [
+    '',                           // No domain (current host)
+    hostname,                     // Exact hostname
+    `.${hostname}`,               // Subdomain wildcard
+    hostname.split('.').slice(-2).join('.'), // Root domain (e.g., example.com)
+    `.${hostname.split('.').slice(-2).join('.')}`, // .example.com
+  ];
+  
+  // Try multiple paths
+  const paths = ['/', '', '/en-us', '/ta-in'];
+  
+  console.log('[Lytics] Clearing cookies for domains:', domains);
+  
+  cookiesToClear.forEach(name => {
+    domains.forEach(domain => {
+      paths.forEach(path => {
+        const domainPart = domain ? `; domain=${domain}` : '';
+        const pathPart = `; path=${path || '/'}`;
+        
+        // Clear with max-age=0
+        document.cookie = `${name}=${domainPart}${pathPart}; max-age=0`;
+        // Clear with expires in past
+        document.cookie = `${name}=${domainPart}${pathPart}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      });
+    });
+  });
+  
+  // Also try to clear by reading current cookies and deleting them
+  document.cookie.split(';').forEach(cookie => {
+    const [name] = cookie.split('=');
+    const trimmedName = name?.trim();
+    if (trimmedName && (
+      trimmedName.includes('seer') || 
+      trimmedName.includes('lytics') || 
+      trimmedName.includes('personalize') ||
+      trimmedName.includes('cs-') ||
+      trimmedName.includes('cs_')
+    )) {
+      domains.forEach(domain => {
+        const domainPart = domain ? `; domain=${domain}` : '';
+        document.cookie = `${trimmedName}=; path=/; max-age=0${domainPart}`;
+        document.cookie = `${trimmedName}=; path=/${domainPart}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      });
+    }
+  });
+  
+  // Clear session storage
+  try {
+    sessionStorage.removeItem('contentstack_personalize');
+    // Clear any keys with personalize/lytics
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.toLowerCase().includes('lytics') || 
+          key.toLowerCase().includes('personalize') ||
+          key.toLowerCase().includes('contentstack')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  } catch {
+    // Ignore
+  }
+  
+  // Clear local storage lytics data
+  try {
+    localStorage.removeItem('lytics_segments');
+    localStorage.removeItem('PathforaPageView');
+    Object.keys(localStorage).forEach(key => {
+      if (key.toLowerCase().includes('lytics') || 
+          key.toLowerCase().includes('personalize')) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch {
+    // Ignore
+  }
+  
+  console.log('[Lytics] Cleared all personalization cookies and storage');
+}
+
+/**
+ * Full sign out reset - resets Lytics and returns whether reload is needed
+ */
+export function fullPersonalizationReset(): boolean {
+  // Reset Lytics user (this now handles everything)
+  resetLyticsUser();
+  
+  // Return true to indicate a page reload is recommended
+  // for the fresh personalization to take effect
+  return true;
 }
 
 // ============================================

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { User, Session } from "@supabase/supabase-js";
-import { identifyUser, resetLyticsUser } from "@/lib/lytics";
+import { identifyUser, fullPersonalizationReset } from "@/lib/lytics";
 
 interface AuthContextType {
   user: User | null;
@@ -87,6 +87,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* -------------------- AUTH INIT -------------------- */
 
+  // Helper to clear stale auth data
+  const clearStaleAuth = async () => {
+    console.log("[AUTH] Clearing stale auth data...");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore errors during cleanup
+    }
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setSubscription(null);
+    setLoading(false);
+  };
+
   useEffect(() => {
     console.log("[AUTH] AuthProvider mounted");
 
@@ -117,11 +132,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .getSession()
       .then(({ data, error }) => {
         console.log("[AUTH] getSession result", { data, error });
+        
+        // Handle invalid refresh token error
+        if (error?.message?.includes("Refresh Token") || error?.message?.includes("Invalid")) {
+          console.warn("[AUTH] Invalid refresh token detected, clearing stale auth");
+          clearStaleAuth();
+          return;
+        }
+        
         resolveAuth(data?.session ?? null);
       })
       .catch((err) => {
         console.error("[AUTH] getSession error", err);
-        resolveAuth(null);
+        // Clear stale auth on any auth error
+        if (err?.message?.includes("Refresh Token") || err?.message?.includes("Invalid")) {
+          clearStaleAuth();
+        } else {
+          resolveAuth(null);
+        }
       })
       .finally(() => clearTimeout(timeout));
 
@@ -129,7 +157,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("[AUTH] auth change", event);
-        resolveAuth(session);
+        
+        // Handle token refresh errors
+        if (event === "TOKEN_REFRESHED" && !session) {
+          console.warn("[AUTH] Token refresh failed, clearing auth");
+          clearStaleAuth();
+          return;
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          fetchProfile(session.user.id);
+          fetchSubscription(session.user.id);
+        } else {
+          setProfile(null);
+          setSubscription(null);
+        }
+        
+        setLoading(false);
       }
     );
 
@@ -156,34 +203,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /* -------------------- AUTH ACTIONS -------------------- */
 
   const signUp = async (email: string, password: string, name: string) => {
+    console.log('[AUTH] Sign up started...');
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: name } },
     });
+    
+    if (!error) {
+      console.log('[AUTH] Sign up successful, force reloading for fresh personalization...');
+      // Force reload to ensure middleware runs with new auth state
+      window.location.reload();
+    }
+    
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('[AUTH] Sign in started...');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (!error) {
+      console.log('[AUTH] Sign in successful, force reloading for fresh personalization...');
+      // Force reload to ensure middleware runs with new auth state
+      // This ensures Lytics identifies user and Personalize fetches new variant
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    }
+    
     return { error };
   };
 
   const signInWithGoogle = async () => {
+    console.log('[AUTH] Google sign in started...');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    // Note: OAuth redirects, so no need to reload here
     return { error };
   };
 
   const signOut = async () => {
+    console.log('[AUTH] Sign out started...');
+
+    // 1. Sign out from Supabase first
+    await supabase.auth.signOut();
+
+    window.location.reload();
+    console.log('[AUTH] Supabase sign out complete');
+    
+    // 2. Clear local state
     setUser(null);
     setSession(null);
     setProfile(null);
     setSubscription(null);
-    resetLyticsUser();
-    await supabase.auth.signOut();
+    console.log('[AUTH] Local state cleared');
+    
+    // 3. Reset Lytics and clear personalization cookies
+    console.log('[AUTH] Calling fullPersonalizationReset...');
+    fullPersonalizationReset();
+    console.log('[AUTH] Personalization reset complete');
+    
+    // 4. Force reload to ensure middleware runs fresh
+    // This ensures anonymous user gets correct variant
+    setTimeout(() => {
+      console.log('[AUTH] Force reloading page...');
+      window.location.href = '/';
+    }, 300);
   };
 
   return (

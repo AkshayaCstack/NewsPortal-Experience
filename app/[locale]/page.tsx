@@ -6,8 +6,11 @@ import LatestPopularSidebar from "@/components/home/LatestPopularSidebar";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
 import PersonalizeTracker from "@/components/analytics/PersonalizeTracker";
 import OfferSection from "@/components/home/OfferSection";
+import { headers } from "next/headers";
 
-export const revalidate = 60;
+// Disable caching to ensure fresh personalization on every request
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -16,7 +19,14 @@ interface PageProps {
 
 export default async function HomePage({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  const { variant } = await searchParams;
+  
+  // Read variant from HEADERS (set by middleware)
+  const headersList = await headers();
+  const variant = headersList.get('x-personalize-variant') || undefined;
+  
+  console.log('=== [Page] HOMEPAGE DEBUG ===');
+  console.log('[Page] Locale:', locale);
+  console.log('[Page] Variant from headers:', variant);
   
   // Fetch page with personalization variant if available
   // The CMS decides what components to return based on the variant
@@ -32,6 +42,7 @@ export default async function HomePage({ params, searchParams }: PageProps) {
   const featuredMagazines = magazines?.slice(0, 3) || [];
 
   if (!page) {
+    console.log('[Page] ERROR: No page returned from CMS!');
     return (
       <main className="container" style={{ padding: '100px 20px', textAlign: 'center' }}>
         <h1>Welcome to NewzHub</h1>
@@ -74,6 +85,19 @@ export default async function HomePage({ params, searchParams }: PageProps) {
     block.newsletter_card
   );
   const newsletterCard = newsletterBlock?.newsletter_card;
+  
+  // DEBUG: Log what was found
+  console.log('[Page] --- COMPONENT DETECTION ---');
+  console.log('[Page] All component keys:', page.components?.map((c: any) => Object.keys(c)));
+  console.log('[Page] offerBlock found:', !!offerBlock);
+  console.log('[Page] signinBlock found:', !!signinBlock);
+  console.log('[Page] signinCard extracted:', !!signinCard);
+  console.log('[Page] newsletterCard found:', !!newsletterCard);
+  console.log('[Page] --- RENDERING DECISIONS ---');
+  console.log('[Page] Will render OfferSection:', !!offerBlock);
+  console.log('[Page] Will render Newsletter with signin:', !!(signinCard));
+  console.log('[Page] Will render Newsletter without signin:', !!(!signinCard && newsletterCard));
+  console.log('=== [Page] END DEBUG ===');
 
   // Exclude breaking news from latest articles
   const breakingUids = breakingArticles?.map((a: any) => a.uid) || [];

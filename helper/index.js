@@ -18,6 +18,11 @@ function getVariantAliases(variantParam) {
 -------------------------- */
 export async function getPageByURL(url, locale = DEFAULT_LOCALE, variantParam = null) {
   try {
+    console.log('=== [Helper] PAGE FETCH DEBUG ===');
+    console.log('[Helper] URL:', url);
+    console.log('[Helper] Locale:', locale);
+    console.log('[Helper] Variant param received:', variantParam);
+    
     let Query = Stack.ContentType("page")
       .Query()
       .language(locale)
@@ -28,24 +33,36 @@ export async function getPageByURL(url, locale = DEFAULT_LOCALE, variantParam = 
       ]);
 
     if (variantParam) {
-      // Ensure it's an array for the .variants() method
-      const aliases = typeof variantParam === 'string'
-        ? variantParam.split(',') 
-        : variantParam;
+      // Convert variant param (e.g., "0_1") to variant aliases (e.g., ["cs_personalize_0_1"])
+      // The SDK's variantParamToVariantAliases method handles this conversion
+      const aliases = Personalize.variantParamToVariantAliases(variantParam);
       
-      console.log('[Personalize Helper] Fetching with variant aliases:', aliases);
+      console.log('[Helper] Converted variant param to aliases:', aliases);
       
-      // The SDK .variants() method applies the x-cs-variant-uid header automatically
-      Query = Query.variants(aliases); 
+      if (aliases && aliases.length > 0) {
+        // The SDK .variants() method applies the x-cs-variant-uid header automatically
+        Query = Query.variants(aliases); 
+        console.log('[Helper] Applied variants to query');
+      } else {
+        console.log('[Helper] No valid aliases - fetching BASE entry');
+      }
     } else {
-      console.log('[Personalize Helper] No variant param, fetching base entry');
+      console.log('[Helper] No variant param - fetching BASE entry');
     }
 
     const result = await Query.toJSON().find();
-    return result[0]?.[0];
+    const page = result[0]?.[0];
+    
+    console.log('[Helper] Page found:', !!page);
+    console.log('[Helper] Page title:', page?.title);
+    console.log('[Helper] Components count:', page?.components?.length);
+    console.log('[Helper] Component keys:', page?.components?.map(c => Object.keys(c)));
+    console.log('=== [Helper] END DEBUG ===');
+    
+    return page;
   
-} catch (error) {
-    console.error('Error fetching page:', error);
+  } catch (error) {
+    console.error('[Helper] Error fetching page:', error);
     return null;
   }
 }
