@@ -40,15 +40,15 @@ export default function OfferSection({
       <section className="offer-section">
         <div className="container">
           <div className="offer-card">
-            <div className="offer-badge">
-              <span>{discountPercent}% OFF</span>
-            </div>
-            
             <div className="offer-content">
               <div className="offer-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
+              </div>
+              
+              <div className="offer-badge">
+                <span>{discountPercent}% OFF</span>
               </div>
               
               <div className="offer-text">
@@ -59,11 +59,11 @@ export default function OfferSection({
               <div className="offer-pricing">
                 <div className="original-price">
                   <span className="strikethrough">${originalPrice}</span>
-                  <span className="label">/year</span>
+                  <span className="label">/yr</span>
                 </div>
                 <div className="discounted-price">
                   <span className="price">${discountedPrice}</span>
-                  <span className="label">/year</span>
+                  <span className="label">/yr</span>
                 </div>
               </div>
 
@@ -71,17 +71,11 @@ export default function OfferSection({
                 className="offer-cta-btn"
                 onClick={handleClaimOffer}
               >
-                Claim Your Offer
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                Claim Offer
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
               </button>
-            </div>
-
-            <div className="offer-decoration">
-              <div className="sparkle sparkle-1">✨</div>
-              <div className="sparkle sparkle-2">⭐</div>
-              <div className="sparkle sparkle-3">✨</div>
             </div>
           </div>
         </div>

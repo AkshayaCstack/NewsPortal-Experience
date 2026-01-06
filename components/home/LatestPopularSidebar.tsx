@@ -12,14 +12,14 @@ interface LatestPopularSidebarProps {
 
 export default function LatestPopularSidebar({ latestArticles, popularArticles, locale }: LatestPopularSidebarProps) {
   const [activeTab, setActiveTab] = useState<'latest' | 'popular'>('latest');
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(10); // Show more initially
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const articles = activeTab === 'latest' ? latestArticles : popularArticles;
 
   // Reset visible count when tab changes
   useEffect(() => {
-    setVisibleCount(5);
+    setVisibleCount(10);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
@@ -32,9 +32,9 @@ export default function LatestPopularSidebar({ latestArticles, popularArticles, 
 
     const { scrollTop, scrollHeight, clientHeight } = container;
     
-    // Load more when near bottom (within 50px)
-    if (scrollHeight - scrollTop - clientHeight < 50) {
-      setVisibleCount(prev => Math.min(prev + 5, articles.length));
+    // Load more when near bottom (within 100px)
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      setVisibleCount(prev => Math.min(prev + 10, articles.length));
     }
   }, [articles.length]);
 

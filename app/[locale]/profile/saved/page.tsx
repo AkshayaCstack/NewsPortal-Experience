@@ -18,12 +18,12 @@ interface ContentDetails {
   uid: string;
   title: string;
   image?: string;
-  date?: string;
-  contentType: string;
+  slug?: string;
 }
 
 const contentTypeConfig: Record<string, { label: string; icon: string; color: string; path: string }> = {
   article: { label: 'Articles', icon: '📰', color: '#3b82f6', path: 'news' },
+  news_article: { label: 'Articles', icon: '📰', color: '#3b82f6', path: 'news' },
   video: { label: 'Videos', icon: '🎬', color: '#ef4444', path: 'videos' },
   podcast: { label: 'Podcasts', icon: '🎙️', color: '#a78bfa', path: 'podcasts' },
   magazine: { label: 'Magazines', icon: '📖', color: '#f59e0b', path: 'magazine' },
@@ -63,20 +63,38 @@ export default function SavedPage() {
       });
 
       const data = await res.json();
-      setSavedItems(data.items || []);
+      const items = data.items || [];
+      setSavedItems(items);
 
-      // Fetch content details for each saved item
-      // In a real app, you would batch these or have a dedicated endpoint
-      const details: Record<string, ContentDetails> = {};
-      for (const item of data.items || []) {
-        details[item.entry_uid] = {
-          uid: item.entry_uid,
-          title: `${contentTypeConfig[item.content_type_uid]?.label || 'Content'} Item`,
-          contentType: item.content_type_uid,
-          date: item.created_at
-        };
+      // Fetch actual content details from CMS
+      if (items.length > 0) {
+        const detailsRes = await fetch('/api/content-details', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map((item: SavedItem) => ({
+              content_type: item.content_type_uid,
+              entry_uid: item.entry_uid
+            })),
+            locale
+          })
+        });
+
+        const detailsData = await detailsRes.json();
+        if (detailsData.details) {
+          const details: Record<string, ContentDetails> = {};
+          for (const [uid, info] of Object.entries(detailsData.details)) {
+            const typedInfo = info as { title: string; image?: string; slug?: string };
+            details[uid] = {
+              uid,
+              title: typedInfo.title,
+              image: typedInfo.image,
+              slug: typedInfo.slug
+            };
+          }
+          setContentDetails(details);
+        }
       }
-      setContentDetails(details);
     } catch (error) {
       console.error('Error fetching saved items:', error);
     } finally {
@@ -110,7 +128,9 @@ export default function SavedPage() {
   const getContentLink = (item: SavedItem) => {
     const config = contentTypeConfig[item.content_type_uid];
     if (!config) return '#';
-    return `/${locale}/${config.path}/${item.entry_uid}`;
+    // Use slug from content details if available
+    const slug = contentDetails[item.entry_uid]?.slug || item.entry_uid;
+    return `/${locale}/${config.path}/${slug}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -239,17 +259,26 @@ export default function SavedPage() {
             <div className="saved-items-grid">
               {filteredItems.map((item) => {
                 const config = contentTypeConfig[item.content_type_uid];
+                const details = contentDetails[item.entry_uid];
                 
                 return (
                   <div key={item.id} className="saved-item-card">
                     <Link href={getContentLink(item)} className="saved-item-link">
                       <div className="saved-item-image">
-                        <div 
-                          className="saved-item-placeholder"
-                          style={{ backgroundColor: `${config?.color}20` }}
-                        >
-                          <span className="placeholder-icon">{config?.icon}</span>
-                        </div>
+                        {details?.image ? (
+                          <img 
+                            src={details.image} 
+                            alt={details.title || ''} 
+                            className="saved-item-img"
+                          />
+                        ) : (
+                          <div 
+                            className="saved-item-placeholder"
+                            style={{ backgroundColor: `${config?.color}20` }}
+                          >
+                            <span className="placeholder-icon">{config?.icon}</span>
+                          </div>
+                        )}
                         <span 
                           className="saved-item-type"
                           style={{ backgroundColor: config?.color }}
@@ -259,7 +288,7 @@ export default function SavedPage() {
                       </div>
                       <div className="saved-item-content">
                         <h3 className="saved-item-title">
-                          {contentDetails[item.entry_uid]?.title || item.entry_uid}
+                          {details?.title || 'Loading...'}
                         </h3>
                         <span className="saved-item-date">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

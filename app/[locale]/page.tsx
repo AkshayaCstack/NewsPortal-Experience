@@ -142,7 +142,7 @@ export default async function HomePage({ params, searchParams }: PageProps) {
       )}
 
       {/* Hero Section: Breaking News + Latest/Popular Sidebar */}
-      <section className="hero-split-section" id="hero-section-split">
+      <section className="hero-split-section">
         <div className="container">
           <div className="hero-split-grid">
             <div className="hero-main-content">
@@ -150,7 +150,7 @@ export default async function HomePage({ params, searchParams }: PageProps) {
                 <BreakingNews articles={breakingArticles} title="Breaking" locale={locale} />
               )}
             </div>
-            <div className="hero-sidebar">
+            <div className="hero-sidebar" id="hero-section-split">
               <LatestPopularSidebar 
                 latestArticles={latestArticles} 
                 popularArticles={popularArticles}

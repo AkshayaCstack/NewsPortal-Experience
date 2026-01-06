@@ -15,6 +15,12 @@ interface FollowItem {
   created_at: string;
 }
 
+interface ContentDetails {
+  title: string;
+  image?: string;
+  slug?: string;
+}
+
 const targetTypeConfig: Record<string, { label: string; icon: string; color: string; path: string }> = {
   author: { label: 'Authors', icon: '👤', color: '#a78bfa', path: 'author' },
   category: { label: 'Categories', icon: '📁', color: '#3b82f6', path: 'category' },
@@ -23,6 +29,7 @@ const targetTypeConfig: Record<string, { label: string; icon: string; color: str
 export default function FollowingPage() {
   const { user, loading: authLoading } = useAuth();
   const [followItems, setFollowItems] = useState<FollowItem[]>([]);
+  const [contentDetails, setContentDetails] = useState<Record<string, ContentDetails>>({});
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -51,7 +58,37 @@ export default function FollowingPage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFollowItems(data || []);
+      const items = data || [];
+      setFollowItems(items);
+
+      // Fetch actual content details from CMS
+      if (items.length > 0) {
+        const detailsRes = await fetch('/api/content-details', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map((item: FollowItem) => ({
+              content_type: item.target_type,
+              entry_uid: item.target_entry_id
+            })),
+            locale
+          })
+        });
+
+        const detailsData = await detailsRes.json();
+        if (detailsData.details) {
+          const details: Record<string, ContentDetails> = {};
+          for (const [uid, info] of Object.entries(detailsData.details)) {
+            const typedInfo = info as { title: string; image?: string; slug?: string };
+            details[uid] = {
+              title: typedInfo.title,
+              image: typedInfo.image,
+              slug: typedInfo.slug
+            };
+          }
+          setContentDetails(details);
+        }
+      }
     } catch (error) {
       console.error('Error fetching following:', error);
     } finally {
@@ -218,6 +255,7 @@ export default function FollowingPage() {
             <div className="following-items-list">
               {filteredItems.map((item) => {
                 const config = targetTypeConfig[item.target_type];
+                const details = contentDetails[item.target_entry_id];
                 
                 return (
                   <div key={item.id} className="following-item-card">
@@ -226,7 +264,15 @@ export default function FollowingPage() {
                         className="following-item-avatar"
                         style={{ backgroundColor: `${config?.color}20` }}
                       >
-                        <span className="avatar-icon">{config?.icon}</span>
+                        {details?.image ? (
+                          <img 
+                            src={details.image} 
+                            alt={details.title || ''} 
+                            className="avatar-img"
+                          />
+                        ) : (
+                          <span className="avatar-icon">{config?.icon}</span>
+                        )}
                       </div>
                       <div className="following-item-content">
                         <span 
@@ -235,7 +281,9 @@ export default function FollowingPage() {
                         >
                           {config?.label?.slice(0, -1) || item.target_type}
                         </span>
-                        <h3 className="following-item-name">{item.target_entry_id}</h3>
+                        <h3 className="following-item-name">
+                          {details?.title || 'Loading...'}
+                        </h3>
                         <span className="following-item-date">
                           Following since {formatDate(item.created_at)}
                         </span>
