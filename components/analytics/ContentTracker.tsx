@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 interface ContentTrackerProps {
   contentId: string;
-  contentType: "news_article" | "video" | "podcast" | "podcast_episode" | "magazine" | "live_blog";
+  contentType: "news_article" | "videos" | "podcast" | "podcast_episode" | "magazine" | "live_blog";
   title?: string;
   category?: string;
   author?: string;

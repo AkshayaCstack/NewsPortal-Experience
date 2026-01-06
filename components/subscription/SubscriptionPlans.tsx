@@ -29,7 +29,7 @@ const plans: Plan[] = [
   {
     id: 'premium',
     name: 'Premium',
-    price: '$9.99',
+    price: '$19',
     period: 'per month',
     features: [
       'Unlimited articles',
@@ -44,11 +44,11 @@ const plans: Plan[] = [
   {
     id: 'annual',
     name: 'Annual',
-    price: '$99',
+    price: '$159',
     period: 'per year',
     features: [
       'Everything in Premium',
-      'Save 17%',
+      'Save 30% vs monthly',
       'Early access to features',
       'Offline reading',
       'VIP events access'
