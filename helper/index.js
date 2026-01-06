@@ -959,54 +959,83 @@ export function formatDuration(seconds) {
 }
 
 /* -------------------------
-   EDITORIAL QUOTES: Get All Quotes
+   EDITORIAL QUOTES: Hardcoded Quotes (No CMS content type yet)
 -------------------------- */
-export async function getEditorialQuotes(locale = DEFAULT_LOCALE) {
-  try {
-    const Query = Stack.ContentType("editorial_quote")
-      .Query()
-      .language(locale)
-      .where("is_active", true)
-      .toJSON();
+const EDITORIAL_QUOTES = {
+  'en-us': [
+    {
+      quote_text: "The truth is rarely pure and never simple.",
+      author_name: "Oscar Wilde",
+      author_role: "Writer & Playwright"
+    },
+    {
+      quote_text: "Journalism is printing what someone else does not want printed. Everything else is public relations.",
+      author_name: "George Orwell",
+      author_role: "Author & Journalist"
+    },
+    {
+      quote_text: "The duty of a journalist is to tell the truth. Journalism means you go back to the actual facts.",
+      author_name: "Pete Hamill",
+      author_role: "Journalist & Author"
+    },
+    {
+      quote_text: "In a time of universal deceit, telling the truth is a revolutionary act.",
+      author_name: "George Orwell",
+      author_role: "Author & Journalist"
+    },
+    {
+      quote_text: "The press is the best instrument for enlightening the mind of man.",
+      author_name: "Thomas Jefferson",
+      author_role: "Founding Father"
+    }
+  ],
+  'ta-in': [
+    {
+      quote_text: "உண்மை எப்போதும் தூய்மையானது அல்ல, எளிமையானதும் அல்ல.",
+      author_name: "ஆஸ்கர் வைல்ட்",
+      author_role: "எழுத்தாளர் & நாடக ஆசிரியர்"
+    },
+    {
+      quote_text: "பத்திரிகை என்பது வேறு யாரோ அச்சிட விரும்பாததை அச்சிடுவது. மற்ற அனைத்தும் மக்கள் தொடர்புகள்.",
+      author_name: "ஜார்ஜ் ஆர்வெல்",
+      author_role: "ஆசிரியர் & பத்திரிகையாளர்"
+    },
+    {
+      quote_text: "ஒரு பத்திரிகையாளரின் கடமை உண்மையைச் சொல்வது. பத்திரிகை என்றால் உண்மையான உண்மைகளுக்குத் திரும்புவது.",
+      author_name: "பீட் ஹாமில்",
+      author_role: "பத்திரிகையாளர் & ஆசிரியர்"
+    },
+    {
+      quote_text: "உலகளாவிய வஞ்சகத்தின் காலத்தில், உண்மையைச் சொல்வது ஒரு புரட்சிகர செயல்.",
+      author_name: "ஜார்ஜ் ஆர்வெல்",
+      author_role: "ஆசிரியர் & பத்திரிகையாளர்"
+    },
+    {
+      quote_text: "மனிதனின் மனதை அறிவூட்டுவதற்கான சிறந்த கருவி பத்திரிகை.",
+      author_name: "தாமஸ் ஜெபர்சன்",
+      author_role: "நிறுவன தந்தை"
+    }
+  ]
+};
 
-    const result = await Query.find();
-    return result[0] || [];
-  } catch (error) {
-    console.error('Error fetching editorial quotes:', error);
-    return [];
-  }
+export async function getEditorialQuotes(locale = DEFAULT_LOCALE) {
+  return EDITORIAL_QUOTES[locale] || EDITORIAL_QUOTES['en-us'];
 }
 
 /* -------------------------
    EDITORIAL QUOTES: Get Random Quote
 -------------------------- */
 export async function getRandomEditorialQuote(locale = DEFAULT_LOCALE) {
-  try {
-    const quotes = await getEditorialQuotes(locale);
-    if (quotes.length === 0) return null;
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  } catch (error) {
-    console.error('Error fetching random quote:', error);
-    return null;
-  }
+  const quotes = EDITORIAL_QUOTES[locale] || EDITORIAL_QUOTES['en-us'];
+  if (quotes.length === 0) return null;
+  return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
 /* -------------------------
    EDITORIAL QUOTES: Get Featured Quote
 -------------------------- */
 export async function getFeaturedEditorialQuote(locale = DEFAULT_LOCALE) {
-  try {
-    const Query = Stack.ContentType("editorial_quote")
-      .Query()
-      .language(locale)
-      .where("is_featured", true)
-      .limit(1)
-      .toJSON();
-
-    const result = await Query.find();
-    return result[0]?.[0] || null;
-  } catch (error) {
-    console.error('Error fetching featured quote:', error);
-    return null;
-  }
+  // Return the first quote as the "featured" one
+  const quotes = EDITORIAL_QUOTES[locale] || EDITORIAL_QUOTES['en-us'];
+  return quotes[0] || null;
 }

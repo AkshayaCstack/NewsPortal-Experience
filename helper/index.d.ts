@@ -52,3 +52,7 @@ export function getMagazineByUid(uid: string, locale?: string): Promise<any>;
 export function getAllMagazineUids(locale?: string): Promise<string[]>;
 export function formatDuration(seconds: number): string;
 
+// Editorial Quotes
+export function getEditorialQuotes(locale?: string): Promise<any[]>;
+export function getRandomEditorialQuote(locale?: string): Promise<any | null>;
+export function getFeaturedEditorialQuote(locale?: string): Promise<any | null>;
