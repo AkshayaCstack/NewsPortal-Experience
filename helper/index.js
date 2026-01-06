@@ -957,3 +957,56 @@ export function formatDuration(seconds) {
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
+
+/* -------------------------
+   EDITORIAL QUOTES: Get All Quotes
+-------------------------- */
+export async function getEditorialQuotes(locale = DEFAULT_LOCALE) {
+  try {
+    const Query = Stack.ContentType("editorial_quote")
+      .Query()
+      .language(locale)
+      .where("is_active", true)
+      .toJSON();
+
+    const result = await Query.find();
+    return result[0] || [];
+  } catch (error) {
+    console.error('Error fetching editorial quotes:', error);
+    return [];
+  }
+}
+
+/* -------------------------
+   EDITORIAL QUOTES: Get Random Quote
+-------------------------- */
+export async function getRandomEditorialQuote(locale = DEFAULT_LOCALE) {
+  try {
+    const quotes = await getEditorialQuotes(locale);
+    if (quotes.length === 0) return null;
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  } catch (error) {
+    console.error('Error fetching random quote:', error);
+    return null;
+  }
+}
+
+/* -------------------------
+   EDITORIAL QUOTES: Get Featured Quote
+-------------------------- */
+export async function getFeaturedEditorialQuote(locale = DEFAULT_LOCALE) {
+  try {
+    const Query = Stack.ContentType("editorial_quote")
+      .Query()
+      .language(locale)
+      .where("is_featured", true)
+      .limit(1)
+      .toJSON();
+
+    const result = await Query.find();
+    return result[0]?.[0] || null;
+  } catch (error) {
+    console.error('Error fetching featured quote:', error);
+    return null;
+  }
+}

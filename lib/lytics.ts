@@ -54,7 +54,7 @@ export function usePageTracking(pageData?: {
 
 interface ContentViewData {
   content_id: string;
-  content_type: "news_article" | "video" | "podcast" | "podcast_episode" | "magazine" | "live_blog";
+  content_type: "news_article" | "videos" | "podcast" | "podcast_episode" | "magazine" | "live_blog";
   title?: string;
   category?: string;
   author?: string;
@@ -453,7 +453,7 @@ export function trackEntityFollow(
  */
 export function trackContentPlay(
   contentId: string, 
-  contentType: "video" | "podcast" | "podcast_episode",
+  contentType: "videos" | "podcast" | "podcast_episode",
   duration?: number
 ) {
   trackEvent("content_play", {

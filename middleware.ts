@@ -53,11 +53,16 @@ export async function middleware(request: NextRequest) {
 
   // If personalization is not configured, continue without it
   if (!projectUid) {
+    console.warn('[Middleware] NEXT_PUBLIC_PERSONALIZATION_PROJECT_UID not set!');
     const response = NextResponse.next();
     response.headers.set('x-locale', locale);
     response.headers.set('cache-control', 'no-store, must-revalidate');
     return response;
   }
+  
+  // Log environment for debugging
+  const isProduction = process.env.NODE_ENV === 'production';
+  console.log('[Middleware] Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
 
   try {
     // Set custom edge API URL if provided
@@ -117,7 +122,7 @@ export async function middleware(request: NextRequest) {
     console.log('[Middleware] Variant aliases:', variantAliases);
     console.log('[Middleware] User ID:', userId);
 
-    // Create response and set variant in HEADER (more reliable than URL rewrite)
+    // Create response and set variant in HEADER + COOKIE (fallback for platforms that strip headers)
     const response = NextResponse.next();
     
     // Add SDK state to response (sets personalization cookies)
@@ -128,9 +133,19 @@ export async function middleware(request: NextRequest) {
     response.headers.set('cache-control', 'no-store, must-revalidate');
     
     if (variantParam) {
-      // CRITICAL: Set variant in header for page to read
+      // Set variant in HEADER (primary method)
       response.headers.set('x-personalize-variant', variantParam);
-      console.log('[Middleware] Set x-personalize-variant header:', variantParam);
+      
+      // Also set variant in COOKIE (fallback for production environments that strip headers)
+      response.cookies.set('x-personalize-variant', variantParam, {
+        path: '/',
+        httpOnly: false, // Allow client-side access if needed
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 60, // Short-lived, just for this request cycle
+      });
+      
+      console.log('[Middleware] Set x-personalize-variant:', variantParam);
     }
     
     console.log('=== [Middleware] END DEBUG ===');

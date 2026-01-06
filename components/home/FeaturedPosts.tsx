@@ -91,7 +91,7 @@ export default function FeaturedPosts({ videos, podcasts, magazines, locale }: F
   if (allFeatured.length === 0) return null;
 
   return (
-    <section className="featured-posts-section">
+    <section className="featured-posts-section" id="featured-posts-section-unique">
       <div className="container">
         <div className="section-header-bar">
           <h2 className="section-label">

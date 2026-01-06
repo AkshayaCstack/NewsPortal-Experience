@@ -6,7 +6,8 @@ import LatestPopularSidebar from "@/components/home/LatestPopularSidebar";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
 import PersonalizeTracker from "@/components/analytics/PersonalizeTracker";
 import OfferSection from "@/components/home/OfferSection";
-import { headers } from "next/headers";
+import WalkthroughWrapper from "@/components/walkthrough/WalkthroughWrapper";
+import { headers, cookies } from "next/headers";
 
 // Disable caching to ensure fresh personalization on every request
 export const dynamic = 'force-dynamic';
@@ -20,13 +21,20 @@ interface PageProps {
 export default async function HomePage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   
-  // Read variant from HEADERS (set by middleware)
+  // Read variant from HEADERS (primary) or COOKIES (fallback for production)
   const headersList = await headers();
-  const variant = headersList.get('x-personalize-variant') || undefined;
+  const cookieStore = await cookies();
+  
+  // Try header first, then cookie fallback
+  const variantFromHeader = headersList.get('x-personalize-variant');
+  const variantFromCookie = cookieStore.get('x-personalize-variant')?.value;
+  const variant = variantFromHeader || variantFromCookie || undefined;
   
   console.log('=== [Page] HOMEPAGE DEBUG ===');
   console.log('[Page] Locale:', locale);
-  console.log('[Page] Variant from headers:', variant);
+  console.log('[Page] Variant from header:', variantFromHeader);
+  console.log('[Page] Variant from cookie:', variantFromCookie);
+  console.log('[Page] Using variant:', variant);
   
   // Fetch page with personalization variant if available
   // The CMS decides what components to return based on the variant
@@ -85,6 +93,17 @@ export default async function HomePage({ params, searchParams }: PageProps) {
     block.newsletter_card
   );
   const newsletterCard = newsletterBlock?.newsletter_card;
+
+  // Find Walkthrough blocks for new user experience
+  const walkthroughStepsBlock = page.components?.find((block: any) => 
+    block.walkthrough_steps
+  );
+  const walkthroughSteps = walkthroughStepsBlock?.walkthrough_steps?.step || [];
+  
+  const getStartedBlock = page.components?.find((block: any) => 
+    block.get_started_signin
+  );
+  const getStartedData = getStartedBlock?.get_started_signin;
   
   // DEBUG: Log what was found
   console.log('[Page] --- COMPONENT DETECTION ---');
@@ -93,10 +112,13 @@ export default async function HomePage({ params, searchParams }: PageProps) {
   console.log('[Page] signinBlock found:', !!signinBlock);
   console.log('[Page] signinCard extracted:', !!signinCard);
   console.log('[Page] newsletterCard found:', !!newsletterCard);
+  console.log('[Page] walkthroughSteps found:', walkthroughSteps.length, 'steps');
+  console.log('[Page] getStartedData found:', !!getStartedData);
   console.log('[Page] --- RENDERING DECISIONS ---');
   console.log('[Page] Will render OfferSection:', !!offerBlock);
   console.log('[Page] Will render Newsletter with signin:', !!(signinCard));
   console.log('[Page] Will render Newsletter without signin:', !!(!signinCard && newsletterCard));
+  console.log('[Page] Will render Walkthrough:', walkthroughSteps.length > 0);
   console.log('=== [Page] END DEBUG ===');
 
   // Exclude breaking news from latest articles
@@ -109,8 +131,18 @@ export default async function HomePage({ params, searchParams }: PageProps) {
       {/* Personalization Impression Tracker */}
       <PersonalizeTracker variant={variant} />
 
+      {/* Walkthrough for New Users - Rendered if CMS includes it */}
+      {walkthroughSteps.length > 0 && (
+        <WalkthroughWrapper
+          welcomeTitle={getStartedData?.title}
+          welcomeDescription={getStartedData?.description}
+          buttonText={getStartedData?.button_text}
+          steps={walkthroughSteps}
+        />
+      )}
+
       {/* Hero Section: Breaking News + Latest/Popular Sidebar */}
-      <section className="hero-split-section">
+      <section className="hero-split-section" id="hero-section-split">
         <div className="container">
           <div className="hero-split-grid">
             <div className="hero-main-content">

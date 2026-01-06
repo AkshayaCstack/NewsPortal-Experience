@@ -24,7 +24,7 @@ export default function HeaderActions({ locale }: HeaderActionsProps) {
         
         {/* Search */}
         <button 
-          className="header-search"
+          className="header-search" id="header-search-trigger"
           onClick={() => setShowSearch(true)}
           aria-label="Search"
         >

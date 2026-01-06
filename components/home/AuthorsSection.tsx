@@ -79,7 +79,7 @@ export default function AuthorsSection({ data, title, description, locale = 'en-
           </div>
         </div>
 
-        <div className="authors-scroll-row">
+        <div className="authors-scroll-row" id="authors-section">
           {data.map((item: any) => {
             const author = item.reference?.[0] || item;
             const authorName = author.name || author.title || unknownText;
