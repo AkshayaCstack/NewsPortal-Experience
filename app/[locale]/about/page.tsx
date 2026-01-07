@@ -4,8 +4,13 @@ import { Metadata } from "next";
 
 export const revalidate = 60;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPageByURL("/about");
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const page = await getPageByURL("/about", locale);
   
   return {
     title: page?.title || "About Us",
@@ -13,8 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function AboutPage() {
-  const page = await getPageByURL("/about");
+export default async function AboutPage({ params }: PageProps) {
+  const { locale } = await params;
+  const page = await getPageByURL("/about", locale);
 
   if (!page) {
     return (
@@ -120,7 +126,10 @@ export default async function AboutPage() {
                           dangerouslySetInnerHTML={{ __html: feature.description }}
                         />
                         {feature.explore_here?.href && (
-                          <Link href={feature.explore_here.href} className="about-feature-link">
+                          <Link 
+                            href={feature.explore_here.href.startsWith('/') ? `/${locale}${feature.explore_here.href}` : feature.explore_here.href} 
+                            className="about-feature-link"
+                          >
                             <span>{feature.explore_here.title || "Explore"}</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M5 12h14M12 5l7 7-7 7"/>

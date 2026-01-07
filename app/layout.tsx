@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 // Root layout - just provides html structure
-// Actual layout with Header/Footer is in [locale]/layout.tsx
 export default function RootLayout({
   children,
 }: {

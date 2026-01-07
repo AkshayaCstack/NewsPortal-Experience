@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/favicon.ico') ||
-    pathname.includes('.') // Static files like .ico, .svg, etc.
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
