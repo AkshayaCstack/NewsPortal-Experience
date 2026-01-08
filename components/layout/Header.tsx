@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getHeader, jsonRteToText } from "@/helper";
 import HeaderActions from "@/components/layout/HeaderActions";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface HeaderProps {
   locale?: string;
@@ -56,15 +57,21 @@ export default async function Header({ locale = 'en-us' }: HeaderProps) {
       <header className="header">
         <div className="container">
           <div className="header-main">
-            {/* Logo */}
+            {/* Logo - With Edit Tags */}
             <Link href={`/${locale}`} className="header-logo">
               {header.logo?.image?.url && (
                 <img
                   src={header.logo.image.url}
                   alt={header.logo?.label || header.title || "Logo"}
+                  {...getEditTagProps(header, 'logo.image', 'header', locale)}
                 />
               )}
-              <span className="header-logo-text">{header.title}</span>
+              <span 
+                className="header-logo-text"
+                {...getEditTagProps(header, 'title', 'header', locale)}
+              >
+                {header.title}
+              </span>
             </Link>
 
             {/* Navigation - from CMS navigation_menu */}

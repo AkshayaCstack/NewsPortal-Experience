@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { timeAgo } from "@/helper";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface FeaturedPostsProps {
   videos: any[];
   podcasts: any[];
   magazines: any[];
   locale: string;
+  title?: string;
+  description?: string;
 }
 
-export default function FeaturedPosts({ videos, podcasts, magazines, locale }: FeaturedPostsProps) {
+export default function FeaturedPosts({ videos, podcasts, magazines, locale, title, description }: FeaturedPostsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Combine and sort all featured content by date - show more items
@@ -94,10 +97,13 @@ export default function FeaturedPosts({ videos, podcasts, magazines, locale }: F
     <section className="featured-posts-section">
       <div className="container" id="featured-posts-section-unique">
         <div className="section-header-bar">
-          <h2 className="section-label">
-            <span className="label-accent"></span>
-            FEATURED POSTS
-          </h2>
+          <div className="section-header-text">
+            <h2 className="section-label">
+              <span className="label-accent"></span>
+              {title || 'FEATURED POSTS'}
+            </h2>
+            {description && <p className="section-description">{description}</p>}
+          </div>
           <div className="featured-nav-controls">
             <span className="featured-count">{allFeatured.length} items</span>
             <button 
@@ -146,7 +152,12 @@ export default function FeaturedPosts({ videos, podcasts, magazines, locale }: F
                         <span className="category-badge">{category.title || category.name}</span>
                       )}
                     </div>
-                    <h3 className="featured-post-title">{post.title}</h3>
+                    <h3 
+                      className="featured-post-title"
+                      {...getEditTagProps(post, 'title', post.contentType === 'video' ? 'videos' : post.contentType, locale)}
+                    >
+                      {post.title}
+                    </h3>
                     <span className="featured-post-date">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10"/>

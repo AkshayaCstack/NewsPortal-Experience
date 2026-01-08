@@ -4,6 +4,7 @@ import "../globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/components/Providers";
+import LivePreviewWrapper from "@/components/live-preview/LivePreviewWrapper";
 import { i18nConfig, type Locale } from "@/i18n.config";
 import { notFound } from "next/navigation";
 
@@ -61,6 +62,8 @@ export default async function LocaleLayout({
           <Header locale={locale} />
           {children}
           <Footer locale={locale} />
+          {/* Live Preview - Only renders if NEXT_PUBLIC_CONTENTSTACK_LIVE_PREVIEW_ENABLE=true */}
+          <LivePreviewWrapper />
         </Providers>
       </body>
     </html>

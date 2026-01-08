@@ -1956,6 +1956,19 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   border-radius: 2px;
 }
 
+.section-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-description {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 500px;
+}
+
 /* Featured Posts Navigation Controls */
 .featured-nav-controls {
   display: flex;
@@ -7348,7 +7361,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xl);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
@@ -11729,6 +11742,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 .content-search-container {
   position: relative;
   min-width: 280px;
+  z-index: 1000;
 }
 
 .content-search-input-wrapper {
@@ -11786,13 +11800,21 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: var(--color-surface);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  max-height: 320px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-height: 400px;
   overflow-y: auto;
-  z-index: 100;
+  z-index: 9999;
+}
+
+.inline-search-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  background: var(--color-card);
 }
 
 .inline-search-hit {
@@ -11831,13 +11853,6 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.inline-search-empty {
-  padding: 24px 16px;
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
 }
 
 /* Responsive */
@@ -13335,7 +13350,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 .studio-header {
   position: relative;
   padding: 40px 0 60px;
-  overflow: hidden;
+  overflow: visible;
   background: var(--color-primary);
 }
 
@@ -14022,7 +14037,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 .command-header {
   position: relative;
   padding: 48px 0 40px;
-  overflow: hidden;
+  overflow: visible;
   background: var(--color-primary);
   margin-bottom: 24px;
 }
@@ -15359,7 +15374,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   position: relative;
   padding: 40px 0 60px;
   background: var(--color-primary);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .editorial-paper-texture {
@@ -15656,7 +15671,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   font-size: 6rem;
   font-family: Georgia, serif;
   color: #d4a574;
-  opacity: 0.3;
+    opacity: 0.3;
   line-height: 0;
   position: absolute;
   top: -20px;
@@ -15834,7 +15849,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 }
 
 .book-spine:hover .spine-expanded {
-  opacity: 1;
+    opacity: 1;
   pointer-events: auto;
 }
 
@@ -16127,7 +16142,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 .newsroom-header {
   position: relative;
   padding: 40px 0 50px;
-  overflow: hidden;
+  overflow: visible;
   background: var(--color-primary);
 }
 
@@ -16462,9 +16477,9 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
+    margin-bottom: 16px;
+  }
+  
 .hero-story-content .badge-featured {
   display: inline-flex;
   align-items: center;
@@ -16664,7 +16679,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 /* Story Card */
 .story-card {
   display: flex;
-  flex-direction: column;
+    flex-direction: column;
   background: white;
   border: 1px solid var(--color-border);
   border-radius: 16px;
@@ -16792,7 +16807,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 .story-card-author {
   display: flex;
   align-items: center;
-  gap: 8px;
+    gap: 8px;
   color: var(--color-text-secondary);
   font-size: 0.8rem;
 }
@@ -17733,7 +17748,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 
 .walkthrough-welcome-title {
   font-family: var(--font-heading);
-  font-size: 2rem;
+    font-size: 2rem;
   font-weight: 700;
   color: var(--color-text);
   margin: 0 0 12px;

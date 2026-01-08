@@ -271,7 +271,7 @@ export default function FollowingPage() {
                             className="avatar-img"
                           />
                         ) : (
-                          <span className="avatar-icon">{config?.icon}</span>
+                        <span className="avatar-icon">{config?.icon}</span>
                         )}
                       </div>
                       <div className="following-item-content">

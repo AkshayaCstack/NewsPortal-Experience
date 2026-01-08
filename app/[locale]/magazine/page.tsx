@@ -1,7 +1,9 @@
-import { getAllMagazines, formatDate, jsonRteToText, getRandomEditorialQuote } from "@/helper";
+import { getAllMagazines, formatDate, jsonRteToText, getRandomEditorialQuote, getPageByURL } from "@/helper";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentSearch from "@/components/search/ContentSearch";
+import { Metadata } from "next";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -11,10 +13,19 @@ export async function generateStaticParams() {
   return i18nConfig.locales.map((locale) => ({ locale }));
 }
 
-export const metadata = {
-  title: "Magazine | The Editorial Flipbook",
-  description: "Curated, long-form content featuring special reports, investigative pieces, and downloadable issues",
-};
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const page = await getPageByURL("/magazine-page", locale);
+  
+  const headerHero = page?.components?.find((block: any) => 
+    block.hero_section?.title?.toLowerCase().includes('editorial')
+  )?.hero_section;
+
+  return {
+    title: headerHero?.title ? `${headerHero.title} | Magazine` : "Magazine | The Editorial Flipbook",
+    description: headerHero?.text_area || "Curated, long-form content featuring special reports, investigative pieces, and downloadable issues",
+  };
+}
 
 // Fallback quotes (used only if CMS quotes are not available)
 const fallbackQuotes = [
@@ -38,10 +49,34 @@ const fallbackQuotes = [
 export default async function MagazinePage({ params }: PageProps) {
   const { locale } = await params;
   
-  const [allMagazines, cmsQuote] = await Promise.all([
+  const [allMagazines, cmsQuote, page] = await Promise.all([
     getAllMagazines(locale),
-    getRandomEditorialQuote(locale)
+    getRandomEditorialQuote(locale),
+    getPageByURL("/magazine-page", locale)
   ]);
+
+  // Extract CMS hero sections for different page areas
+  const findHeroSection = (pattern: string) => {
+    return page?.components?.find((block: any) => 
+      block.hero_section?.title?.toLowerCase().includes(pattern.toLowerCase())
+    )?.hero_section;
+  };
+
+  // Find component index for edit tags
+  const findComponentIndex = (pattern: string) => {
+    return page?.components?.findIndex((block: any) => 
+      block.hero_section?.title?.toLowerCase().includes(pattern.toLowerCase())
+    ) ?? -1;
+  };
+
+  const headerHero = findHeroSection('editorial');
+  const archiveHero = findHeroSection('archive');
+  const allIssuesHero = findHeroSection('all issues') || findHeroSection('issues');
+  
+  // Component indices for edit tags
+  const headerHeroIndex = findComponentIndex('editorial');
+  const archiveHeroIndex = findComponentIndex('archive');
+  const allIssuesHeroIndex = findComponentIndex('all issues') !== -1 ? findComponentIndex('all issues') : findComponentIndex('issues');
   
   // Current/Latest issue for double-spread hero
   const currentIssue = allMagazines[0];
@@ -74,8 +109,15 @@ export default async function MagazinePage({ params }: PageProps) {
                 </svg>
               </div>
               <div>
-                <h1>The Editorial</h1>
-                <p className="editorial-tagline">Curated Long-Form Journalism</p>
+                <h1 {...(headerHeroIndex >= 0 ? getEditTagProps(page, `components.${headerHeroIndex}.hero_section.title`, 'page', locale) : {})}>
+                  {headerHero?.title || 'The Editorial'}
+                </h1>
+                <p 
+                  className="editorial-tagline"
+                  {...(headerHeroIndex >= 0 ? getEditTagProps(page, `components.${headerHeroIndex}.hero_section.text_area`, 'page', locale) : {})}
+                >
+                  {headerHero?.text_area || 'Curated Long-Form Journalism'}
+                </p>
               </div>
             </div>
             <ContentSearch 
@@ -209,12 +251,12 @@ export default async function MagazinePage({ params }: PageProps) {
         <section className="library-section">
           <div className="container">
             <div className="section-header-editorial">
-              <h2>
+              <h2 {...(archiveHeroIndex >= 0 ? getEditTagProps(page, `components.${archiveHeroIndex}.hero_section.title`, 'page', locale) : {})}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                 </svg>
-                The Archive
+                {archiveHero?.title || 'The Archive'}
               </h2>
               <span className="archive-count">{archiveIssues.length} past issues</span>
             </div>
@@ -240,23 +282,23 @@ export default async function MagazinePage({ params }: PageProps) {
       <section className="all-issues-section">
         <div className="container">
           <div className="section-header-editorial">
-            <h2>
+            <h2 {...(allIssuesHeroIndex >= 0 ? getEditTagProps(page, `components.${allIssuesHeroIndex}.hero_section.title`, 'page', locale) : {})}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <line x1="3" y1="9" x2="21" y2="9"/>
                 <line x1="9" y1="21" x2="9" y2="9"/>
               </svg>
-              All Issues
+              {allIssuesHero?.title || 'All Issues'}
             </h2>
           </div>
 
-          {allMagazines.length > 0 ? (
+            {allMagazines.length > 0 ? (
             <div className="issues-grid">
-              {allMagazines.map((magazine: any) => (
+                {allMagazines.map((magazine: any) => (
                 <IssueCard key={magazine.uid} magazine={magazine} locale={locale} />
-              ))}
-            </div>
-          ) : (
+                ))}
+              </div>
+            ) : (
             <div className="editorial-empty">
               <div className="empty-book">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
@@ -266,8 +308,8 @@ export default async function MagazinePage({ params }: PageProps) {
               </div>
               <h3>No Issues Yet</h3>
               <p>Check back soon for our latest publications.</p>
-            </div>
-          )}
+              </div>
+            )}
         </div>
       </section>
     </main>
@@ -336,7 +378,10 @@ function IssueCard({ magazine, locale }: { magazine: any; locale: string }) {
       href={`/${locale}/magazine/${magazine.uid}`} 
       className={`issue-card ${isPremium ? 'premium' : ''}`}
     >
-      <div className="issue-cover">
+      <div 
+        className="issue-cover"
+        {...getEditTagProps(magazine, 'cover_image', 'magazine', locale)}
+      >
         <img 
           src={magazine.cover_image?.url || 'https://via.placeholder.com/200x280?text=Magazine'} 
           alt={magazine.title}
@@ -359,7 +404,12 @@ function IssueCard({ magazine, locale }: { magazine: any; locale: string }) {
         {category && (
           <span className="issue-category">{category.title || category.name}</span>
         )}
-        <h4 className="issue-title">{magazine.title}</h4>
+        <h4 
+          className="issue-title"
+          {...getEditTagProps(magazine, 'title', 'magazine', locale)}
+        >
+          {magazine.title}
+        </h4>
         <div className="issue-meta">
           {author && (
             <span className="issue-author">{author.name || author.title}</span>

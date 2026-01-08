@@ -4,6 +4,7 @@ import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentInteractions from "@/components/interactions/ContentInteractions";
 import ContentTracker from "@/components/analytics/ContentTracker";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ uid: string; locale: string }>;
@@ -73,9 +74,12 @@ export default async function PodcastDetailPage({ params }: PageProps) {
           <span className="current">{podcast.title}</span>
         </nav>
 
-        {/* Podcast Header */}
+        {/* Podcast Header - With Edit Tags */}
         <div className="podcast-header-section">
-          <div className="podcast-header-cover">
+          <div 
+            className="podcast-header-cover"
+            {...getEditTagProps(podcast, 'cover_image', 'podcast', locale)}
+          >
             <img 
               src={podcast.cover_image?.url || 'https://via.placeholder.com/400x400?text=Podcast'} 
               alt={podcast.title}
@@ -103,10 +107,20 @@ export default async function PodcastDetailPage({ params }: PageProps) {
               </span>
             </div>
             
-            <h1 className="podcast-header-title">{podcast.title}</h1>
+            <h1 
+              className="podcast-header-title"
+              {...getEditTagProps(podcast, 'title', 'podcast', locale)}
+            >
+              {podcast.title}
+            </h1>
             
             {podcast.description && (
-              <p className="podcast-header-description">{podcast.description}</p>
+              <p 
+                className="podcast-header-description"
+                {...getEditTagProps(podcast, 'description', 'podcast', locale)}
+              >
+                {podcast.description}
+              </p>
             )}
             
             <div className="podcast-header-stats">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { timeAgo, formatDate, jsonRteToText } from "@/helper";
 import { useAuth } from "@/contexts/AuthContext";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface Poll {
   question: string;
@@ -215,20 +216,20 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
           <span className="bn-label">BREAKING NEWS</span>
         </div>
         
-        {articles.length > 1 && (
+          {articles.length > 1 && (
           <div className="bn-controls">
             <button onClick={goToPrev} className="bn-arrow">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
+              </button>
             <span className="bn-counter">{currentIndex + 1}/{articles.length}</span>
             <button onClick={goToNext} className="bn-arrow">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-          </div>
-        )}
-      </div>
+              </button>
+            </div>
+          )}
+        </div>
 
-      {/* Main Card */}
+        {/* Main Card */}
       <div className="bn-card">
         {/* Image Side */}
         <div className="bn-image-wrap">
@@ -255,10 +256,20 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
           </div>
 
           <Link href={`/${locale}/news/${currentArticle.uid}`} className="bn-title-link">
-            <h2 className="bn-title">{currentArticle.title}</h2>
+            <h2 
+              className="bn-title"
+              {...getEditTagProps(currentArticle, 'title', 'news_article', locale)}
+            >
+              {currentArticle.title}
+            </h2>
           </Link>
 
-          <p className="bn-excerpt">{getDescription(currentArticle)}</p>
+          <p 
+            className="bn-excerpt"
+            {...getEditTagProps(currentArticle, 'description', 'news_article', locale)}
+          >
+            {getDescription(currentArticle)}
+          </p>
 
           {/* Poll Section */}
           {poll && (
@@ -305,14 +316,14 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
                     </button>
                   );
                 })}
-              </div>
+            </div>
               
               {/* Actions row */}
               <div className="bn-poll-actions">
                 {showThanks === currentArticle.uid && (
                   <span className="bn-poll-thanks">Thanks for voting!</span>
-                )}
-                
+            )}
+            
                 {hasVoted && user && !showThanks && (
                   <button 
                     className={`bn-change-vote ${isChangingVote === currentArticle.uid ? 'active' : ''}`}
@@ -321,37 +332,37 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
                     {isChangingVote === currentArticle.uid ? 'Cancel' : 'Change vote'}
                   </button>
                 )}
-              </div>
-              
+          </div>
+
               {isChangingVote === currentArticle.uid && (
                 <p className="bn-poll-hint">Select a different option</p>
               )}
               
               {!user && !hasVoted && (
                 <p className="bn-poll-signin">Sign in to vote</p>
-              )}
-            </div>
+            )}
+          </div>
           )}
 
           <Link href={`/${locale}/news/${currentArticle.uid}`} className="bn-read-more">
             Read Full Story
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
-          </Link>
+        </Link>
         </div>
       </div>
 
       {/* Dots */}
-      {articles.length > 1 && (
+        {articles.length > 1 && (
         <div className="bn-dots">
           {articles.map((_, i) => (
-            <button 
+              <button
               key={i} 
               className={`bn-dot ${i === currentIndex ? 'active' : ''}`}
               onClick={() => setCurrentIndex(i)}
-            />
-          ))}
-        </div>
-      )}
+              />
+            ))}
+          </div>
+        )}
     </section>
   );
 }

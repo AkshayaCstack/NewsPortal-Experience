@@ -5,6 +5,7 @@ import { i18nConfig } from "@/i18n.config";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import ContentTracker from "@/components/analytics/ContentTracker";
 import FollowButton from "@/components/interactions/FollowButton";
+import { getEditTagProps } from "@/lib/editTags";
 
 export const revalidate = 60;
 
@@ -135,8 +136,13 @@ export default async function ArticlePage({ params }: PageProps) {
               </Link>
             )}
 
-            {/* Headline */}
-            <h1 className="article-title">{articleTitle}</h1>
+            {/* Headline - With Edit Tag */}
+            <h1 
+              className="article-title"
+              {...getEditTagProps(article, 'headline', 'news_article', locale)}
+            >
+              {articleTitle}
+            </h1>
 
             {/* Author & Date Row - Minimal */}
             <div className="article-meta-row">
@@ -163,16 +169,20 @@ export default async function ArticlePage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Hero Image */}
+            {/* Hero Image - With Edit Tag */}
             {heroImage && (
-              <div className="article-hero-image">
+              <div 
+                className="article-hero-image"
+                {...getEditTagProps(article, 'group', 'news_article', locale)}
+              >
                 <img src={heroImage} alt={articleTitle} />
               </div>
             )}
 
-            {/* Article Body */}
+            {/* Article Body - With Edit Tag */}
             <div 
               className="article-content"
+              {...getEditTagProps(article, 'body', 'news_article', locale)}
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
 

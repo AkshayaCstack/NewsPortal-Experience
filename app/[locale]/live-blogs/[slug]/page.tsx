@@ -12,6 +12,7 @@ import {
 } from '@/helper';
 import ContentInteractions from '@/components/interactions/ContentInteractions';
 import ContentTracker from '@/components/analytics/ContentTracker';
+import { getEditTagProps } from '@/lib/editTags';
 
 // Source icons and labels
 const sourceConfig: Record<string, { label: string; icon: string; color: string }> = {
@@ -155,13 +156,19 @@ export default async function LiveBlogPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Title - Full Width */}
-          <h1 className="liveblog-title">{liveBlog.title}</h1>
+          {/* Title - Full Width - With Edit Tag */}
+          <h1 
+            className="liveblog-title"
+            {...getEditTagProps(liveBlog, 'title', 'live_blog', locale)}
+          >
+            {liveBlog.title}
+          </h1>
 
           {/* Description - Full Width */}
           {descriptionHtml && (
             <div 
               className="liveblog-description"
+              {...getEditTagProps(liveBlog, 'description', 'live_blog', locale)}
               dangerouslySetInnerHTML={{ __html: descriptionHtml }}
             />
           )}

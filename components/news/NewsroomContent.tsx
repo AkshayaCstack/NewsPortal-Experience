@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ContentSearch from '@/components/search/ContentSearch';
+import { getEditTagProps } from '@/lib/editTags';
 
 interface Article {
   uid: string;
@@ -29,6 +31,16 @@ interface NewsroomContentProps {
   featuredArticles: Article[];
   breakingNews: Article[];
   locale: string;
+  // CMS-driven titles
+  headerTitle?: string;
+  latestStoriesTitle?: string;
+  trendingTopicsTitle?: string;
+  mostReadTitle?: string;
+  // For edit tags
+  page?: any;
+  headerIndex?: number;
+  latestIndex?: number;
+  mostReadIndex?: number;
 }
 
 export default function NewsroomContent({ 
@@ -36,10 +48,17 @@ export default function NewsroomContent({
   categories, 
   featuredArticles,
   breakingNews,
-  locale 
+  locale,
+  headerTitle,
+  latestStoriesTitle,
+  trendingTopicsTitle,
+  mostReadTitle,
+  page,
+  headerIndex = -1,
+  latestIndex = -1,
+  mostReadIndex = -1
 }: NewsroomContentProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update time every minute
@@ -111,25 +130,13 @@ export default function NewsroomContent({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // Filter articles
+  // Filter articles by category
   const filterArticles = (articleList: Article[]) => {
-    let filtered = articleList;
+    if (!activeCategory) return articleList;
     
-    if (activeCategory) {
-      filtered = filtered.filter(article => 
-        article.category?.some((cat: any) => cat.uid === activeCategory)
-      );
-    }
-    
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(article =>
-        article.title?.toLowerCase().includes(query) ||
-        article.headline?.toLowerCase().includes(query)
-      );
-    }
-    
-    return filtered;
+    return articleList.filter(article => 
+      article.category?.some((cat: any) => cat.uid === activeCategory)
+    );
   };
 
   // Data processing
@@ -167,7 +174,9 @@ export default function NewsroomContent({
                 </div>
               </div>
               <div>
-                <h1>The Newsroom</h1>
+                <h1 {...(page && headerIndex >= 0 ? getEditTagProps(page, `components.${headerIndex}.hero_section.title`, 'page', locale) : {})}>
+                  {headerTitle || 'The Newsroom'}
+                </h1>
                 <div className="newsroom-live-info">
                   <span className="live-dot"></span>
                   <span className="live-time">
@@ -188,22 +197,12 @@ export default function NewsroomContent({
               </div>
             </div>
             
-            {/* Search */}
-            <div className="newsroom-search">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input 
-                type="text" 
-                placeholder="Search stories..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="search-clear">×</button>
-              )}
-            </div>
+            {/* Algolia-powered Search */}
+            <ContentSearch 
+              locale={locale} 
+              contentType="news_article"
+              placeholder="Search stories..."
+            />
           </div>
         </div>
       </section>
@@ -264,6 +263,7 @@ export default function NewsroomContent({
                 key={cat.uid}
                 className={`category-chip ${activeCategory === cat.uid ? 'active' : ''}`}
                 onClick={() => setActiveCategory(activeCategory === cat.uid ? null : cat.uid)}
+                {...getEditTagProps(cat, 'title', 'category', locale)}
               >
                 {cat.title || cat.name}
               </button>
@@ -279,7 +279,7 @@ export default function NewsroomContent({
             {/* Main Content Column */}
             <div className="newsroom-content">
               {/* Hero Story */}
-              {heroArticle && !activeCategory && !searchQuery && (
+              {heroArticle && !activeCategory && (
                 <Link 
                   href={`/${locale}/news/${heroArticle.uid}`}
                   className="hero-story-card"
@@ -331,7 +331,7 @@ export default function NewsroomContent({
               )}
 
               {/* Secondary Featured Row */}
-              {secondaryFeatured.length > 0 && !activeCategory && !searchQuery && (
+              {secondaryFeatured.length > 0 && !activeCategory && (
                 <div className="secondary-stories-grid">
                   {secondaryFeatured.map((article) => (
                     <Link 
@@ -351,7 +351,12 @@ export default function NewsroomContent({
                         )}
                       </div>
                       <div className="secondary-content">
-                        <h3 className="secondary-title">{article.headline || article.title}</h3>
+                        <h3 
+                          className="secondary-title"
+                          {...getEditTagProps(article, 'headline', 'news_article', locale)}
+                        >
+                          {article.headline || article.title}
+                        </h3>
                         <div className="secondary-meta">
                           <span>{timeAgo(article.published_date)}</span>
                           <span>•</span>
@@ -365,12 +370,10 @@ export default function NewsroomContent({
 
               {/* Section Header */}
               <div className="stories-section-header">
-                <h2>
+                <h2 {...(page && latestIndex >= 0 && !activeCategory ? getEditTagProps(page, `components.${latestIndex}.hero_section.title`, 'page', locale) : {})}>
                   {activeCategory 
                     ? getCategoryName(activeCategory)
-                    : searchQuery 
-                      ? `Results for "${searchQuery}"`
-                      : 'Latest Stories'
+                    : (latestStoriesTitle || 'Latest Stories')
                   }
                 </h2>
                 <span className="stories-count">{filteredArticles.length} stories</span>
@@ -404,18 +407,13 @@ export default function NewsroomContent({
                   <p>
                     {activeCategory 
                       ? `No articles in ${getCategoryName(activeCategory)} yet.`
-                      : searchQuery 
-                        ? `No results for "${searchQuery}"`
-                        : 'Check back later for new stories.'
+                      : 'Check back later for new stories.'
                     }
                   </p>
-                  {(activeCategory || searchQuery) && (
+                  {activeCategory && (
                     <button 
                       className="btn-clear-filters"
-                      onClick={() => {
-                        setActiveCategory(null);
-                        setSearchQuery('');
-                      }}
+                      onClick={() => setActiveCategory(null)}
                     >
                       Clear Filters
                     </button>
@@ -433,7 +431,7 @@ export default function NewsroomContent({
                     <path d="M23 7l-7 5 7 5V7z"/>
                     <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                   </svg>
-                  <h3>Trending Topics</h3>
+                  <h3>{trendingTopicsTitle || 'Trending Topics'}</h3>
                 </div>
                 <div className="trending-topics-list">
                   {trendingTopics.map((topic, idx) => (
@@ -456,7 +454,9 @@ export default function NewsroomContent({
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                   </svg>
-                  <h3>Most Read</h3>
+                  <h3 {...(page && mostReadIndex >= 0 ? getEditTagProps(page, `components.${mostReadIndex}.hero_section.title`, 'page', locale) : {})}>
+                    {mostReadTitle || 'Most Read'}
+                  </h3>
                 </div>
                 <div className="most-read-list">
                   {mostRead.map((article, idx) => (
@@ -467,7 +467,9 @@ export default function NewsroomContent({
                     >
                       <span className="read-rank">{idx + 1}</span>
                       <div className="read-info">
-                        <h4>{article.headline || article.title}</h4>
+                        <h4 {...getEditTagProps(article, 'headline', 'news_article', locale)}>
+                          {article.headline || article.title}
+                        </h4>
                         <span className="read-time">{timeAgo(article.published_date)}</span>
                       </div>
                     </Link>
@@ -476,7 +478,7 @@ export default function NewsroomContent({
               </div>
 
               {/* Live Activity */}
-              <div className="sidebar-card activity-card">
+            {/* <div className="sidebar-card activity-card">
                 <div className="sidebar-card-header">
                   <span className="activity-pulse"></span>
                   <h3>Live Activity</h3>
@@ -497,7 +499,7 @@ export default function NewsroomContent({
                     {Math.floor(Math.random() * 50) + 10} people reading now
                   </span>
                 </div>
-              </div>
+              </div>*/}
             </aside>
           </div>
         </div>
@@ -548,9 +550,19 @@ function StoryCard({
         )}
       </div>
       <div className="story-card-content">
-        <h3 className="story-card-title">{article.headline || article.title}</h3>
+        <h3 
+          className="story-card-title"
+          {...getEditTagProps(article, 'headline', 'news_article', locale)}
+        >
+          {article.headline || article.title}
+        </h3>
         {variant === 'large' && (
-          <p className="story-card-summary">{getSummary(article)}</p>
+          <p 
+            className="story-card-summary"
+            {...getEditTagProps(article, 'description', 'news_article', locale)}
+          >
+            {getSummary(article)}
+          </p>
         )}
         <div className="story-card-footer">
           {author && (

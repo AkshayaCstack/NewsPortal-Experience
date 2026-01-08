@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef } from "react";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface AuthorsSectionProps {
   data: any[];
@@ -94,7 +95,10 @@ export default function AuthorsSection({ data, title, description, locale = 'en-
               >
                 <Link href={`/${locale}/author/${author.uid}`}>
                   <div className="author-avatar-card">
-                    <div className="author-avatar-image">
+                    <div 
+                      className="author-avatar-image"
+                      {...getEditTagProps(author, 'profile_image', 'author', locale)}
+                    >
                       <img
                         src={author.profile_image?.url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect fill="%23252540" width="80" height="80" rx="40"/><text x="40" y="48" text-anchor="middle" fill="%23a78bfa" font-size="28" font-weight="bold">${encodeURIComponent(authorName.charAt(0) || 'A')}</text></svg>`}
                         alt={authorName}
@@ -123,9 +127,13 @@ export default function AuthorsSection({ data, title, description, locale = 'en-
           onMouseLeave={handleTooltipMouseLeave}
         >
           <div className="author-tooltip-body">
-            <strong>{activeAuthor.name || activeAuthor.title || unknownText}</strong>
+            <strong {...getEditTagProps(activeAuthor, 'name', 'author', locale)}>
+              {activeAuthor.name || activeAuthor.title || unknownText}
+            </strong>
             {activeAuthor.bio && (
-              <p>{activeAuthor.bio.length > 80 ? activeAuthor.bio.substring(0, 80) + '...' : activeAuthor.bio}</p>
+              <p {...getEditTagProps(activeAuthor, 'bio', 'author', locale)}>
+                {activeAuthor.bio.length > 80 ? activeAuthor.bio.substring(0, 80) + '...' : activeAuthor.bio}
+              </p>
             )}
             <Link href={`/${locale}/author/${activeAuthor.uid}`} className="view-profile">
               {viewProfileText}

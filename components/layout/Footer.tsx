@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFooter, getAllCategories, jsonRteToText } from "@/helper";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface FooterProps {
   locale?: string;
@@ -35,19 +36,30 @@ export default async function Footer({ locale = 'en-us' }: FooterProps) {
     <footer className="footer">
       <div className="container">
         <div className="footer-grid">
-          {/* Brand Column */}
+          {/* Brand Column - With Edit Tags */}
           <div className="footer-brand">
             <Link href={`/${locale}`} className="header-logo">
               {footer.logo?.image?.url && (
                 <img
                   src={footer.logo.image.url}
                   alt={footer.logo?.label || footer.title || "Logo"}
+                  {...getEditTagProps(footer, 'logo.image', 'footer', locale)}
                 />
               )}
-              <span className="footer-logo-text">{footer.title}</span>
+              <span 
+                className="footer-logo-text"
+                {...getEditTagProps(footer, 'title', 'footer', locale)}
+              >
+                {footer.title}
+              </span>
             </Link>
             {footer.description && (
-              <p className="footer-desc">{footer.description}</p>
+              <p 
+                className="footer-desc"
+                {...getEditTagProps(footer, 'description', 'footer', locale)}
+              >
+                {footer.description}
+              </p>
             )}
           </div>
 

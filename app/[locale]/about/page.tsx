@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getPageByURL } from "@/helper";
 import { Metadata } from "next";
+import { getEditTagProps } from "@/lib/editTags";
 
 export const revalidate = 60;
 
@@ -46,7 +47,7 @@ export default async function AboutPage({ params }: PageProps) {
       <div className="about-bg-grid" aria-hidden="true"></div>
       
       {page.components?.map((block: any, i: number) => {
-        // Hero Section
+        // Hero Section - With Edit Tags
         if (block.hero_section) {
           const hero = block.hero_section;
           return (
@@ -56,16 +57,27 @@ export default async function AboutPage({ params }: PageProps) {
                   <span className="about-hero-badge-dot"></span>
                   About Us
                 </div>
-                <h1 className="about-hero-title">
+                <h1 
+                  className="about-hero-title"
+                  {...getEditTagProps(page, `components.${i}.hero_section.title`, 'page', locale)}
+                >
                   <span className="about-hero-title-line">{hero.title}</span>
                 </h1>
                 {hero.text_area && (
-                  <p className="about-hero-description">{hero.text_area}</p>
+                  <p 
+                    className="about-hero-description"
+                    {...getEditTagProps(page, `components.${i}.hero_section.text_area`, 'page', locale)}
+                  >
+                    {hero.text_area}
+                  </p>
                 )}
                 {hero.image?.url && (
                   <div className="about-hero-image-wrapper">
                     <div className="about-hero-image-glow"></div>
-                    <div className="about-hero-image">
+                    <div 
+                      className="about-hero-image"
+                      {...getEditTagProps(page, `components.${i}.hero_section.image`, 'page', locale)}
+                    >
                       <img src={hero.image.url} alt={hero.title} />
                     </div>
                   </div>
@@ -75,7 +87,7 @@ export default async function AboutPage({ params }: PageProps) {
           );
         }
 
-        // Rich Text Section
+        // Rich Text Section - With Edit Tags
         if (block.rich_text_section) {
           const section = block.rich_text_section;
           return (
@@ -85,9 +97,15 @@ export default async function AboutPage({ params }: PageProps) {
                   <span className="about-content-label-line"></span>
                   Our Story
                 </div>
-                <h2 className="about-content-title">{section.title}</h2>
+                <h2 
+                  className="about-content-title"
+                  {...getEditTagProps(page, `components.${i}.rich_text_section.title`, 'page', locale)}
+                >
+                  {section.title}
+                </h2>
                 <div 
                   className="about-content-text"
+                  {...getEditTagProps(page, `components.${i}.rich_text_section.content`, 'page', locale)}
                   dangerouslySetInnerHTML={{ __html: section.content }}
                 />
               </div>
@@ -95,14 +113,19 @@ export default async function AboutPage({ params }: PageProps) {
           );
         }
 
-        // Features Section
+        // Features Section - With Edit Tags
         if (block.features_section) {
           const features = block.features_section;
           return (
             <section key={`features-${i}`} className="about-features-section">
               <div className="about-features-wrapper">
                 <div className="about-features-header">
-                  <h2 className="about-features-title">{features.features_intro_title}</h2>
+                  <h2 
+                    className="about-features-title"
+                    {...getEditTagProps(page, `components.${i}.features_section.features_intro_title`, 'page', locale)}
+                  >
+                    {features.features_intro_title}
+                  </h2>
                   <div className="about-features-decoration">
                     <span></span>
                     <span></span>
@@ -120,9 +143,15 @@ export default async function AboutPage({ params }: PageProps) {
                         {String(fi + 1).padStart(2, '0')}
                       </div>
                       <div className="about-feature-content">
-                        <h3 className="about-feature-title">{feature.title}</h3>
+                        <h3 
+                          className="about-feature-title"
+                          {...getEditTagProps(page, `components.${i}.features_section.features_instance.${fi}.title`, 'page', locale)}
+                        >
+                          {feature.title}
+                        </h3>
                         <div 
                           className="about-feature-description"
+                          {...getEditTagProps(page, `components.${i}.features_section.features_instance.${fi}.description`, 'page', locale)}
                           dangerouslySetInnerHTML={{ __html: feature.description }}
                         />
                         {feature.explore_here?.href && (

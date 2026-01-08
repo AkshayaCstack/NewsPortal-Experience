@@ -4,6 +4,7 @@ import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentInteractions from "@/components/interactions/ContentInteractions";
 import ContentTracker from "@/components/analytics/ContentTracker";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ uid: string; locale: string }>;
@@ -77,9 +78,12 @@ export default async function MagazineDetailPage({ params }: PageProps) {
 
         {/* Main Content */}
         <div className="magazine-detail-layout">
-          {/* Left Column - Cover */}
+          {/* Left Column - Cover - With Edit Tag */}
           <div className="magazine-cover-section">
-            <div className="magazine-cover-large">
+            <div 
+              className="magazine-cover-large"
+              {...getEditTagProps(magazine, 'cover_image', 'magazine', locale)}
+            >
               <img 
                 src={magazine.cover_image?.url || 'https://via.placeholder.com/400x560?text=Magazine'} 
                 alt={magazine.title}
@@ -146,7 +150,12 @@ export default async function MagazineDetailPage({ params }: PageProps) {
               <span className="magazine-category-badge">{category.title || category.name}</span>
             )}
             
-            <h1 className="magazine-detail-title">{magazine.title}</h1>
+            <h1 
+              className="magazine-detail-title"
+              {...getEditTagProps(magazine, 'title', 'magazine', locale)}
+            >
+              {magazine.title}
+            </h1>
             
             <div className="magazine-detail-meta">
               <span className="meta-item">
@@ -182,11 +191,13 @@ export default async function MagazineDetailPage({ params }: PageProps) {
               </Link>
             )}
 
-            {/* Description */}
+            {/* Description - With Edit Tag */}
             {magazine.description && (
               <div className="magazine-detail-description">
                 <h3>About this issue</h3>
-                <p>{magazine.description}</p>
+                <p {...getEditTagProps(magazine, 'description', 'magazine', locale)}>
+                  {magazine.description}
+                </p>
               </div>
             )}
 

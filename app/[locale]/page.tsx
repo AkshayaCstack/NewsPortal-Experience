@@ -8,6 +8,7 @@ import PersonalizeTracker from "@/components/analytics/PersonalizeTracker";
 import OfferSection from "@/components/home/OfferSection";
 import WalkthroughWrapper from "@/components/walkthrough/WalkthroughWrapper";
 import { headers, cookies } from "next/headers";
+import { getEditTagProps } from "@/lib/editTags";
 
 // Disable caching to ensure fresh personalization on every request
 export const dynamic = 'force-dynamic';
@@ -65,7 +66,27 @@ export default async function HomePage({ params, searchParams }: PageProps) {
     )?.hero_section;
   };
 
+  // Find component index for edit tags
+  const findComponentIndex = (pattern: string, blockType: string = 'hero_section') => {
+    return page.components?.findIndex((block: any) => {
+      if (blockType === 'hero_section') {
+        return block.hero_section?.title?.toLowerCase().includes(pattern.toLowerCase());
+      }
+      return block[blockType];
+    }) ?? -1;
+  };
+
+  // Extract all CMS hero sections for different page areas
   const topWritersHero = findHeroSection('top writers') || findHeroSection('writers');
+  const breakingHero = findHeroSection('breaking');
+  const latestHero = findHeroSection('latest');
+  const trendingHero = findHeroSection('trending') || findHeroSection('popular');
+  const featuredHero = findHeroSection('featured');
+
+  // Get component indices for edit tags
+  const topWritersIndex = findComponentIndex('top writers') !== -1 ? findComponentIndex('top writers') : findComponentIndex('writers');
+  const authorsIndex = findComponentIndex('authors', 'authors_section');
+  const offerIndex = findComponentIndex('offer', 'offer_section');
 
   // Get authors from CMS
   const authorsSection = page.components?.find((block: any) => block.authors_section)?.authors_section;
@@ -145,53 +166,76 @@ export default async function HomePage({ params, searchParams }: PageProps) {
       <section className="hero-split-section">
         <div className="container">
           <div className="hero-split-grid">
-            <div className="hero-main-content">
+            <div 
+              className="hero-main-content"
+              {...(findComponentIndex('breaking') >= 0 ? getEditTagProps(page, `components.${findComponentIndex('breaking')}.hero_section`, 'page', locale) : {})}
+            >
               {breakingArticles && breakingArticles.length > 0 && (
-                <BreakingNews articles={breakingArticles} title="Breaking" locale={locale} />
+                <BreakingNews 
+                  articles={breakingArticles} 
+                  title={breakingHero?.title || "Breaking"} 
+                  locale={locale} 
+                />
               )}
             </div>
-            <div className="hero-sidebar" id="hero-section-split">
+            <div 
+              className="hero-sidebar" 
+              id="hero-section-split"
+              {...(findComponentIndex('latest') >= 0 ? getEditTagProps(page, `components.${findComponentIndex('latest')}.hero_section`, 'page', locale) : {})}
+            >
               <LatestPopularSidebar 
                 latestArticles={latestArticles} 
                 popularArticles={popularArticles}
                 locale={locale}
+                latestTitle={latestHero?.title}
+                latestDescription={latestHero?.text_area}
+                popularTitle={trendingHero?.title}
+                popularDescription={trendingHero?.text_area}
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Authors Section */}
+      {/* Authors Section - With Edit Tags wrapper */}
       {authorsSection && (
-        <AuthorsSection
-          data={authorsSection.author} 
-          title={topWritersHero?.title}
-          description={topWritersHero?.text_area}
-          locale={locale}
-        />
+        <div {...getEditTagProps(page, `components.${authorsIndex}.authors_section`, 'page', locale)}>
+          <AuthorsSection
+            data={authorsSection.author} 
+            title={topWritersHero?.title}
+            description={topWritersHero?.text_area}
+            locale={locale}
+          />
+        </div>
       )}
 
-      {/* Featured Posts */}
-      <FeaturedPosts 
-        videos={featuredVideos || []}
-        podcasts={featuredPodcasts || []}
-        magazines={featuredMagazines || []}
-        locale={locale}
-      />
+      {/* Featured Posts - With Edit Tags */}
+      <div {...(findComponentIndex('featured') >= 0 ? getEditTagProps(page, `components.${findComponentIndex('featured')}.hero_section`, 'page', locale) : {})}>
+        <FeaturedPosts 
+          videos={featuredVideos || []}
+          podcasts={featuredPodcasts || []}
+          magazines={featuredMagazines || []}
+          locale={locale}
+          title={featuredHero?.title}
+          description={featuredHero?.text_area}
+        />
+      </div>
 
       {/* ============================================
           PERSONALIZED CONTENT - CMS-DRIVEN RENDERING
           Render ONLY what CMS returns in the variant
           ============================================ */}
       
-      {/* Offer Section - rendered if CMS included it in the variant */}
+      {/* Offer Section - With Edit Tags - rendered if CMS included it in the variant */}
       {offerBlock && (
-        <OfferSection
-          title={offerBlock.title}
-          description={offerBlock.description}
-          discountPercent={offerBlock.discount_percent}
-          price={offerBlock.price}
-        />
+        <div {...getEditTagProps(page, `components.${offerIndex}.offer_section`, 'page', locale)}>
+          <OfferSection
+            title={offerBlock.title}
+            description={offerBlock.description}
+            discountPercent={offerBlock.discount_percent}
+            price={offerBlock.price}
+          />
+        </div>
       )}
 
       {/* Sign-in section - rendered if CMS included it in the variant */}

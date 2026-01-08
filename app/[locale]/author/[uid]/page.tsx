@@ -3,6 +3,7 @@ import ArticlesSection from "@/components/home/ArticlesSection";
 import AuthorActions from "@/components/author/AuthorActions";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getEditTagProps } from "@/lib/editTags";
 
 export const revalidate = 60;
 
@@ -29,12 +30,12 @@ export async function generateMetadata({ params }: { params: Promise<{ uid: stri
   };
 }
 
-export default async function AuthorPage({ params }: { params: Promise<{ uid: string }> }) {
-  const { uid } = await params;
+export default async function AuthorPage({ params }: { params: Promise<{ uid: string; locale: string }> }) {
+  const { uid, locale } = await params;
   
   const [author, articles] = await Promise.all([
-    getAuthorByUid(uid),
-    getArticlesByAuthor(uid)
+    getAuthorByUid(uid, locale),
+    getArticlesByAuthor(uid, locale)
   ]);
 
   if (!author) {
@@ -62,7 +63,10 @@ export default async function AuthorPage({ params }: { params: Promise<{ uid: st
           </Link>
           
           <div className="author-hero">
-            <div className="author-hero-avatar">
+            <div 
+              className="author-hero-avatar"
+              {...getEditTagProps(author, 'profile_image', 'author', locale)}
+            >
               <img
                 src={author.profile_image?.url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect fill="%23252540" width="160" height="160" rx="80"/><text x="80" y="95" text-anchor="middle" fill="%23a78bfa" font-size="56" font-weight="bold">${encodeURIComponent(authorName.charAt(0) || 'A')}</text></svg>`}
                 alt={authorName}
@@ -70,8 +74,12 @@ export default async function AuthorPage({ params }: { params: Promise<{ uid: st
             </div>
             
             <div className="author-hero-info">
-              <h1>{authorName}</h1>
-              {author.bio && <p className="author-bio">{author.bio}</p>}
+              <h1 {...getEditTagProps(author, 'name', 'author', locale)}>{authorName}</h1>
+              {author.bio && (
+                <p className="author-bio" {...getEditTagProps(author, 'bio', 'author', locale)}>
+                  {author.bio}
+                </p>
+              )}
               
               {/* Social Links */}
               {author.social_apps && author.social_apps.length > 0 && (

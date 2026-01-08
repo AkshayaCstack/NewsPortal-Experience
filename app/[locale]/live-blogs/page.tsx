@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAllLiveBlogs, formatDate, formatDateTime, jsonRteToText } from '@/helper';
 import { i18nConfig } from "@/i18n.config";
 import ContentSearch from "@/components/search/ContentSearch";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -138,7 +139,7 @@ export default async function LiveBlogsPage({ params }: PageProps) {
                 <h2>
                   <span className="live-indicator-pulse"></span>
                   Active Coverage
-                </h2>
+              </h2>
                 <span className="coverage-badge">{activeLiveBlogs.length} LIVE</span>
               </div>
 
@@ -203,7 +204,7 @@ export default async function LiveBlogsPage({ params }: PageProps) {
                 })}
                 {liveBlogs.length === 0 && (
                   <div className="no-events">
-                    <span>📡</span>
+                <span>📡</span>
                     <p>No key moments yet</p>
                   </div>
                 )}
@@ -251,8 +252,8 @@ export default async function LiveBlogsPage({ params }: PageProps) {
                   </div>
                   <h3>No Coverage Active</h3>
                   <p>Check back soon for live updates.</p>
-                </div>
-              )}
+              </div>
+            )}
             </div>
           </div>
         </div>
@@ -282,12 +283,12 @@ function CommandFeedCard({ blog, locale, isPrimary }: { blog: any; locale: strin
         style={{ backgroundImage: heroImage ? `url(${heroImage})` : 'none' }}
       >
         <div className="feed-backdrop-overlay"></div>
-      </div>
-
+          </div>
+        
       {/* Live Badge */}
       <div className="feed-status-badge" style={{ backgroundColor: status.color }}>
         <span className="status-pulse"></span>
-        {status.label}
+          {status.label}
       </div>
 
       {/* Content */}
@@ -300,17 +301,25 @@ function CommandFeedCard({ blog, locale, isPrimary }: { blog: any; locale: strin
             </svg>
             {updates.length} updates
           </span>
-          {category && (
+        {category && (
             <span className="metric category">
-              {category.title || category.name}
-            </span>
-          )}
+            {category.title || category.name}
+          </span>
+        )}
         </div>
 
-        <h3 className="feed-title">{blog.title}</h3>
-        
+        <h3 
+          className="feed-title"
+          {...getEditTagProps(blog, 'title', 'live_blog', locale)}
+        >
+          {blog.title}
+        </h3>
+
         {description && (
-          <p className="feed-description">
+          <p 
+            className="feed-description"
+            {...getEditTagProps(blog, 'description', 'live_blog', locale)}
+          >
             {description.length > 100 ? description.substring(0, 100) + '...' : description}
           </p>
         )}
@@ -349,12 +358,17 @@ function StreamMiniCard({ blog, locale }: { blog: any; locale: string }) {
   return (
     <Link href={`/${locale}/live-blogs/${blog.uid}`} className="stream-mini-card">
       <span className="mini-live-dot"></span>
-      <span className="mini-title">{blog.title}</span>
+      <span 
+        className="mini-title"
+        {...getEditTagProps(blog, 'title', 'live_blog', locale)}
+      >
+        {blog.title}
+      </span>
       <span className="mini-updates">{updates.length} updates</span>
     </Link>
   );
 }
-
+          
 // List Item for coverage feed
 function CoverageListItem({ blog, locale }: { blog: any; locale: string }) {
   const status = statusConfig[blog.status] || statusConfig.ended;
@@ -370,13 +384,18 @@ function CoverageListItem({ blog, locale }: { blog: any; locale: string }) {
           <div className="coverage-thumb-placeholder">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
+                </svg>
           </div>
         )}
         <span className="coverage-status-dot" style={{ backgroundColor: status.color }}></span>
       </div>
       <div className="coverage-info">
-        <h4 className="coverage-title">{blog.title}</h4>
+        <h4 
+          className="coverage-title"
+          {...getEditTagProps(blog, 'title', 'live_blog', locale)}
+        >
+          {blog.title}
+        </h4>
         <div className="coverage-meta">
           <span className="coverage-status" style={{ color: status.color }}>{status.label}</span>
           <span className="coverage-updates">{updates.length} updates</span>

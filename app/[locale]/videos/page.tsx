@@ -2,6 +2,7 @@ import { getAllVideos, getFeaturedVideos } from "@/helper";
 import { i18nConfig } from "@/i18n.config";
 import ContentSearch from "@/components/search/ContentSearch";
 import Link from "next/link";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -76,7 +77,7 @@ export default async function VideosPage({ params }: PageProps) {
 
             {/* Hero Content */}
             <div className="cinema-hero-content">
-              <div className="container">
+        <div className="container">
                 <div className="hero-info">
                   <div className="hero-badges">
                     {heroVideo.is_featured && (
@@ -94,10 +95,18 @@ export default async function VideosPage({ params }: PageProps) {
                     )}
                   </div>
                   
-                  <h1 className="hero-title">{heroVideo.title}</h1>
+                  <h1 
+                    className="hero-title"
+                    {...getEditTagProps(heroVideo, 'title', 'videos', locale)}
+                  >
+                    {heroVideo.title}
+                  </h1>
                   
                   {heroVideo.description && (
-                    <p className="hero-description">
+                    <p 
+                      className="hero-description"
+                      {...getEditTagProps(heroVideo, 'description', 'videos', locale)}
+                    >
                       {heroVideo.description.length > 150 
                         ? heroVideo.description.substring(0, 150) + '...' 
                         : heroVideo.description}
@@ -172,6 +181,7 @@ export default async function VideosPage({ params }: PageProps) {
                   </svg>
                 }
                 videos={latestVideos}
+                locale={locale}
               />
 
               {/* Popular Now */}
@@ -184,23 +194,10 @@ export default async function VideosPage({ params }: PageProps) {
                   </svg>
                 }
                 videos={popularVideos}
+                locale={locale}
               />
 
-              {/* Category Shelves */}
-              {Object.entries(videosByCategory).slice(0, 4).map(([category, videos]: [string, any]) => (
-                videos.length > 0 && (
-                  <VideoShelf 
-                    key={category}
-                    title={category}
-                    icon={
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                      </svg>
-                    }
-                    videos={videos}
-                  />
-                )
-              ))}
+            
 
               {/* Empty State */}
               {allVideos.length === 0 && (
@@ -242,6 +239,7 @@ export default async function VideosPage({ params }: PageProps) {
                     key={video.uid} 
                     video={video} 
                     rank={index + 1}
+                    locale={locale}
                   />
                 ))}
               </div>
@@ -261,7 +259,7 @@ export default async function VideosPage({ params }: PageProps) {
 }
 
 // Netflix-style Video Shelf
-function VideoShelf({ title, icon, videos }: { title: string; icon: React.ReactNode; videos: any[] }) {
+function VideoShelf({ title, icon, videos, locale }: { title: string; icon: React.ReactNode; videos: any[]; locale: string }) {
   if (videos.length === 0) return null;
   
   return (
@@ -274,7 +272,7 @@ function VideoShelf({ title, icon, videos }: { title: string; icon: React.ReactN
       <div className="shelf-scroll-container">
         <div className="shelf-scroll">
           {videos.map((video: any) => (
-            <ShelfVideoCard key={video.uid} video={video} />
+            <ShelfVideoCard key={video.uid} video={video} locale={locale} />
           ))}
         </div>
       </div>
@@ -283,7 +281,7 @@ function VideoShelf({ title, icon, videos }: { title: string; icon: React.ReactN
 }
 
 // Shelf Video Card
-function ShelfVideoCard({ video }: { video: any }) {
+function ShelfVideoCard({ video, locale }: { video: any; locale: string }) {
   const youtubeId = getYouTubeId(video.video_url?.href);
   const thumbnailUrl = video.thumbnail?.url || 
     (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null);
@@ -296,7 +294,10 @@ function ShelfVideoCard({ video }: { video: any }) {
       rel="noopener noreferrer"
       className="shelf-video-card"
     >
-      <div className="shelf-card-thumb">
+      <div 
+        className="shelf-card-thumb"
+        {...getEditTagProps(video, 'thumbnail', 'videos', locale)}
+      >
         {thumbnailUrl ? (
           <img src={thumbnailUrl} alt={video.title} />
         ) : (
@@ -319,14 +320,19 @@ function ShelfVideoCard({ video }: { video: any }) {
         {category && (
           <span className="shelf-card-category">{category.title || category.name}</span>
         )}
-        <h4 className="shelf-card-title">{video.title}</h4>
+        <h4 
+          className="shelf-card-title"
+          {...getEditTagProps(video, 'title', 'videos', locale)}
+        >
+          {video.title}
+        </h4>
       </div>
     </a>
   );
 }
 
 // Trending Sidebar Item
-function TrendingItem({ video, rank }: { video: any; rank: number }) {
+function TrendingItem({ video, rank, locale }: { video: any; rank: number; locale: string }) {
   const youtubeId = getYouTubeId(video.video_url?.href);
   const thumbnailUrl = video.thumbnail?.url || 
     (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/default.jpg` : null);
@@ -351,7 +357,12 @@ function TrendingItem({ video, rank }: { video: any; rank: number }) {
         )}
       </div>
       <div className="trending-info">
-        <h4 className="trending-title">{video.title}</h4>
+        <h4 
+          className="trending-title"
+          {...getEditTagProps(video, 'title', 'videos', locale)}
+        >
+          {video.title}
+        </h4>
         {video.category?.[0] && (
           <span className="trending-category">
             {video.category[0].title || video.category[0].name}

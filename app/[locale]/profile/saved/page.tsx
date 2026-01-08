@@ -82,7 +82,7 @@ export default function SavedPage() {
 
         const detailsData = await detailsRes.json();
         if (detailsData.details) {
-          const details: Record<string, ContentDetails> = {};
+      const details: Record<string, ContentDetails> = {};
           for (const [uid, info] of Object.entries(detailsData.details)) {
             const typedInfo = info as { title: string; image?: string; slug?: string };
             details[uid] = {
@@ -90,9 +90,9 @@ export default function SavedPage() {
               title: typedInfo.title,
               image: typedInfo.image,
               slug: typedInfo.slug
-            };
-          }
-          setContentDetails(details);
+        };
+      }
+      setContentDetails(details);
         }
       }
     } catch (error) {
@@ -272,12 +272,12 @@ export default function SavedPage() {
                             className="saved-item-img"
                           />
                         ) : (
-                          <div 
-                            className="saved-item-placeholder"
-                            style={{ backgroundColor: `${config?.color}20` }}
-                          >
-                            <span className="placeholder-icon">{config?.icon}</span>
-                          </div>
+                        <div 
+                          className="saved-item-placeholder"
+                          style={{ backgroundColor: `${config?.color}20` }}
+                        >
+                          <span className="placeholder-icon">{config?.icon}</span>
+                        </div>
                         )}
                         <span 
                           className="saved-item-type"

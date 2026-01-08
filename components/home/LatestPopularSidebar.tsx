@@ -3,14 +3,27 @@
 import Link from "next/link";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { timeAgo } from "@/helper";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface LatestPopularSidebarProps {
   latestArticles: any[];
   popularArticles: any[];
   locale: string;
+  latestTitle?: string;
+  latestDescription?: string;
+  popularTitle?: string;
+  popularDescription?: string;
 }
 
-export default function LatestPopularSidebar({ latestArticles, popularArticles, locale }: LatestPopularSidebarProps) {
+export default function LatestPopularSidebar({ 
+  latestArticles, 
+  popularArticles, 
+  locale,
+  latestTitle,
+  latestDescription,
+  popularTitle,
+  popularDescription
+}: LatestPopularSidebarProps) {
   const [activeTab, setActiveTab] = useState<'latest' | 'popular'>('latest');
   const [visibleCount, setVisibleCount] = useState(10); // Show more initially
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -59,16 +72,18 @@ export default function LatestPopularSidebar({ latestArticles, popularArticles, 
         <button 
           className={`sidebar-tab ${activeTab === 'latest' ? 'active' : ''}`}
           onClick={() => setActiveTab('latest')}
+          title={latestDescription || undefined}
         >
           <span className="tab-indicator"></span>
-          LATEST
+          {latestTitle || 'LATEST'}
         </button>
         <button 
           className={`sidebar-tab ${activeTab === 'popular' ? 'active' : ''}`}
           onClick={() => setActiveTab('popular')}
+          title={popularDescription || undefined}
         >
           <span className="tab-indicator"></span>
-          POPULAR
+          {popularTitle || 'POPULAR'}
         </button>
       </div>
 
@@ -91,7 +106,12 @@ export default function LatestPopularSidebar({ latestArticles, popularArticles, 
                 />
               </div>
               <div className="sidebar-post-content">
-                <h4 className="sidebar-post-title">{article.title}</h4>
+                <h4 
+                  className="sidebar-post-title"
+                  {...getEditTagProps(article, 'title', 'news_article', locale)}
+                >
+                  {article.title}
+                </h4>
                 <span className="sidebar-post-date">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"/>

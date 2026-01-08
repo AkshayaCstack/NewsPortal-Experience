@@ -1,8 +1,28 @@
-import Stack from "@/contentstack-sdk";
+import Stack, { createStackInstance } from "@/contentstack-sdk";
 import Personalize from "@contentstack/personalize-edge-sdk";
 
 // Default locale
 const DEFAULT_LOCALE = 'en-us';
+
+// Check if Live Preview is enabled
+const isLivePreviewEnabled = process.env.NEXT_PUBLIC_CONTENTSTACK_LIVE_PREVIEW_ENABLE === 'true';
+
+/**
+ * Get a Stack instance configured for the current request
+ * For Live Preview, we need a fresh instance per request to apply searchParams
+ * @param {Object} searchParams - URL search params from the page (for Live Preview)
+ * @returns {Object} Stack instance
+ */
+export function getStackInstance(searchParams = null) {
+  if (isLivePreviewEnabled && searchParams) {
+    // Create a fresh stack instance for Live Preview
+    const stack = createStackInstance();
+    // Apply live preview query params
+    stack.livePreviewQuery(searchParams);
+    return stack;
+  }
+  return Stack;
+}
 
 /* -------------------------
    HELPER: Convert variant param to aliases
@@ -14,16 +34,20 @@ function getVariantAliases(variantParam) {
 }
 
 /* -------------------------
-   PAGE (by URL) - Supports Personalization Variants
+   PAGE (by URL) - Supports Personalization Variants & Live Preview
 -------------------------- */
-export async function getPageByURL(url, locale = DEFAULT_LOCALE, variantParam = null) {
+export async function getPageByURL(url, locale = DEFAULT_LOCALE, variantParam = null, searchParams = null) {
   try {
     console.log('=== [Helper] PAGE FETCH DEBUG ===');
     console.log('[Helper] URL:', url);
     console.log('[Helper] Locale:', locale);
     console.log('[Helper] Variant param received:', variantParam);
+    console.log('[Helper] Live Preview enabled:', isLivePreviewEnabled);
     
-    let Query = Stack.ContentType("page")
+    // Get appropriate stack instance (fresh for Live Preview)
+    const stack = getStackInstance(searchParams);
+    
+    let Query = stack.ContentType("page")
       .Query()
       .language(locale)
       .where("url", url)
@@ -149,11 +173,14 @@ export async function getFooter(locale = DEFAULT_LOCALE) {
 }
 
 /* -------------------------
-   ARTICLE DETAIL (by UID)
+   ARTICLE DETAIL (by UID) - Supports Live Preview
 -------------------------- */
-export async function getArticleBySlug(slug, locale = DEFAULT_LOCALE) {
+export async function getArticleBySlug(slug, locale = DEFAULT_LOCALE, searchParams = null) {
   try {
-    const result = await Stack.ContentType("news_article")
+    // Get appropriate stack instance (fresh for Live Preview)
+    const stack = getStackInstance(searchParams);
+    
+    const result = await stack.ContentType("news_article")
       .Query()
       .language(locale)
       .includeReference(["author", "category", "related_articles"])
@@ -188,11 +215,12 @@ export async function getAllArticleSlugs(locale = DEFAULT_LOCALE) {
 }
 
 /* -------------------------
-   ALL ARTICLES
+   ALL ARTICLES - Supports Live Preview
 -------------------------- */
-export async function getAllArticles(locale = DEFAULT_LOCALE) {
+export async function getAllArticles(locale = DEFAULT_LOCALE, searchParams = null) {
   try {
-    const Query = Stack.ContentType("news_article")
+    const stack = getStackInstance(searchParams);
+    const Query = stack.ContentType("news_article")
       .Query()
       .language(locale)
       .includeReference(["author", "category"])
@@ -552,10 +580,11 @@ export async function getAllLiveBlogs(locale = DEFAULT_LOCALE) {
 }
 
 /* -------------------------
-   LIVE BLOG: Get Live Blog by URL/Slug
+   LIVE BLOG: Get Live Blog by URL/Slug - Supports Live Preview
 -------------------------- */
-export async function getLiveBlogBySlug(slug, locale = DEFAULT_LOCALE) {
-  const result = await Stack.ContentType("live_blog")
+export async function getLiveBlogBySlug(slug, locale = DEFAULT_LOCALE, searchParams = null) {
+  const stack = getStackInstance(searchParams);
+  const result = await stack.ContentType("live_blog")
     .Query()
     .language(locale)
     .includeReference(["author", "category"])
@@ -668,11 +697,12 @@ export async function getFeaturedPodcasts(locale = DEFAULT_LOCALE) {
 }
 
 /* -------------------------
-   PODCASTS: Get Podcast by UID
+   PODCASTS: Get Podcast by UID - Supports Live Preview
 -------------------------- */
-export async function getPodcastByUid(uid, locale = DEFAULT_LOCALE) {
+export async function getPodcastByUid(uid, locale = DEFAULT_LOCALE, searchParams = null) {
   try {
-    const result = await Stack.ContentType("podcast")
+    const stack = getStackInstance(searchParams);
+    const result = await stack.ContentType("podcast")
       .Query()
       .language(locale)
       .includeReference(["author", "category"])
@@ -921,10 +951,11 @@ export async function getPremiumMagazines(locale = DEFAULT_LOCALE) {
 }
 
 /* -------------------------
-   MAGAZINE: Get Magazine by UID
+   MAGAZINE: Get Magazine by UID - Supports Live Preview
 -------------------------- */
-export async function getMagazineByUid(uid, locale = DEFAULT_LOCALE) {
-  const result = await Stack.ContentType("magazine")
+export async function getMagazineByUid(uid, locale = DEFAULT_LOCALE, searchParams = null) {
+  const stack = getStackInstance(searchParams);
+  const result = await stack.ContentType("magazine")
     .Query()
     .language(locale)
     .includeReference(["author", "category"])

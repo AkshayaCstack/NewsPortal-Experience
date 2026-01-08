@@ -2,6 +2,7 @@ import { getAllPodcasts, getEpisodesByPodcast, formatDate, formatDuration } from
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
 import ContentSearch from "@/components/search/ContentSearch";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -82,7 +83,10 @@ export default async function PodcastsPage({ params }: PageProps) {
                 </div>
                 
                 <div className="cinema-content">
-                  <div className="cinema-cover">
+                  <div 
+                    className="cinema-cover"
+                    {...getEditTagProps(featuredPodcast, 'cover_image', 'podcast', locale)}
+                  >
                     <img 
                       src={featuredPodcast.cover_image?.url || 'https://via.placeholder.com/300x300?text=🎙️'} 
                       alt={featuredPodcast.title}
@@ -92,8 +96,8 @@ export default async function PodcastsPage({ params }: PageProps) {
                       <div className="waveform-bars">
                         {[...Array(20)].map((_, i) => (
                           <span key={i} style={{ animationDelay: `${i * 0.05}s` }}></span>
-                        ))}
-                      </div>
+                ))}
+              </div>
                     </div>
                   </div>
                   
@@ -113,10 +117,20 @@ export default async function PodcastsPage({ params }: PageProps) {
                       )}
                     </div>
                     
-                    <h2 className="cinema-title">{featuredPodcast.title}</h2>
+                    <h2 
+                      className="cinema-title"
+                      {...getEditTagProps(featuredPodcast, 'title', 'podcast', locale)}
+                    >
+                      {featuredPodcast.title}
+                    </h2>
                     
                     {featuredPodcast.description && (
-                      <p className="cinema-description">{featuredPodcast.description}</p>
+                      <p 
+                        className="cinema-description"
+                        {...getEditTagProps(featuredPodcast, 'description', 'podcast', locale)}
+                      >
+                        {featuredPodcast.description}
+                      </p>
                     )}
                     
                     <div className="cinema-meta">
@@ -256,7 +270,10 @@ function TimelineShowCard({ podcast, locale, index }: { podcast: any; locale: st
         <div className="timeline-line"></div>
       </div>
       
-      <div className="timeline-cover">
+      <div 
+        className="timeline-cover"
+        {...getEditTagProps(podcast, 'cover_image', 'podcast', locale)}
+      >
         <img 
           src={podcast.cover_image?.url || 'https://via.placeholder.com/100x100?text=🎙️'} 
           alt={podcast.title}
@@ -268,16 +285,24 @@ function TimelineShowCard({ podcast, locale, index }: { podcast: any; locale: st
       
       <div className="timeline-content">
         <div className="timeline-top">
-          {category && (
+        {category && (
             <span className="timeline-category">{category.title || category.name}</span>
           )}
           {podcast.is_featured && (
             <span className="timeline-badge-featured">Featured</span>
-          )}
+        )}
         </div>
-        <h3 className="timeline-title">{podcast.title}</h3>
+        <h3 
+          className="timeline-title"
+          {...getEditTagProps(podcast, 'title', 'podcast', locale)}
+        >
+          {podcast.title}
+        </h3>
         {podcast.description && (
-          <p className="timeline-desc">
+          <p 
+            className="timeline-desc"
+            {...getEditTagProps(podcast, 'description', 'podcast', locale)}
+          >
             {podcast.description.length > 120 
               ? podcast.description.substring(0, 120) + '...' 
               : podcast.description}
