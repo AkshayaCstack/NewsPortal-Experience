@@ -264,7 +264,12 @@ export default async function PodcastDetailPage({ params }: PageProps) {
                         </span>
                       </div>
                       
-                      <h3 className="episode-title">{episode.title}</h3>
+                      <h3 
+                        className="episode-title"
+                        {...getEditTagProps(episode, 'title', 'episodes', locale)}
+                      >
+                        {episode.title}
+                      </h3>
                       
                       {episode.episode_summary && (
                         <div 

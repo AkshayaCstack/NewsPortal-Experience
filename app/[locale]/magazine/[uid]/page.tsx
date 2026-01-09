@@ -248,13 +248,14 @@ export default async function MagazineDetailPage({ params }: PageProps) {
                     <img 
                       src={m.cover_image?.url || 'https://via.placeholder.com/120x170?text=Magazine'} 
                       alt={m.title}
+                      {...getEditTagProps(m, 'cover_image', 'magazine', locale)}
                     />
                     <span className={`access-badge mini ${m.access_level}`}>
                       {m.access_level === 'subscription' ? '👑' : 'Free'}
                     </span>
                   </div>
                   <div className="related-magazine-info">
-                    <h4>{m.title}</h4>
+                    <h4 {...getEditTagProps(m, 'title', 'magazine', locale)}>{m.title}</h4>
                     <span className="related-date">{formatDate(m.date, locale)}</span>
                   </div>
                 </Link>

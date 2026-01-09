@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getEditTagProps } from '@/lib/editTags';
 
 interface Article {
   uid: string;
@@ -224,8 +225,18 @@ export default function ExploreContent({
                       />
                     </div>
                     <div className="article-list-content">
-                      <h3 className="article-list-title">{article.title}</h3>
-                      <p className="article-list-summary">{getSummary(article)}</p>
+                      <h3 
+                        className="article-list-title"
+                        {...getEditTagProps(article, 'title', 'news_article', locale)}
+                      >
+                        {article.title}
+                      </h3>
+                      <p 
+                        className="article-list-summary"
+                        {...getEditTagProps(article, 'description', 'news_article', locale)}
+                      >
+                        {getSummary(article)}
+                      </p>
                       <div className="article-list-meta">
                         <div className="article-list-author">
                           {author?.profile_image?.url ? (
@@ -280,8 +291,18 @@ export default function ExploreContent({
                       {category && !activeCategory && (
                         <span className="article-list-category">{category.title || category.name}</span>
                       )}
-                      <h3 className="article-list-title">{article.title}</h3>
-                      <p className="article-list-summary">{getSummary(article)}</p>
+                      <h3 
+                        className="article-list-title"
+                        {...getEditTagProps(article, 'title', 'news_article', locale)}
+                      >
+                        {article.title}
+                      </h3>
+                      <p 
+                        className="article-list-summary"
+                        {...getEditTagProps(article, 'description', 'news_article', locale)}
+                      >
+                        {getSummary(article)}
+                      </p>
                       <div className="article-list-meta">
                         <div className="article-list-author">
                           {author?.profile_image?.url ? (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { timeAgo } from "@/helper";
+import { getEditTagProps } from "@/lib/editTags";
 
 interface ArticlesSectionProps {
   data: any[];
@@ -82,7 +83,12 @@ export default function ArticlesSection({
                       <span className="meta-category">{category.title || category.name}</span>
                     )}
                   </div>
-                  <h3 className="article-card-title">{articleTitle}</h3>
+                  <h3 
+                    className="article-card-title"
+                    {...getEditTagProps(article, 'title', 'news_article', locale)}
+                  >
+                    {articleTitle}
+                  </h3>
                   <span className="article-card-time">{timeAgo(article.published_date, locale)}</span>
                 </div>
               </Link>

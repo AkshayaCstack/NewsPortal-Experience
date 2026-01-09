@@ -2,6 +2,7 @@ import { getCategoryByUid, getArticlesByCategory, getAllCategories, timeAgo, jso
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { i18nConfig } from "@/i18n.config";
+import { getEditTagProps } from "@/lib/editTags";
 
 export const revalidate = 60;
 
@@ -82,7 +83,12 @@ export default async function CategoryPage({ params }: PageProps) {
           </Link>
           
           <div className="category-page-info">
-            <h1 className="category-page-title">{categoryName}</h1>
+            <h1 
+              className="category-page-title"
+              {...getEditTagProps(category, 'title', 'category', locale)}
+            >
+              {categoryName}
+            </h1>
             <p className="category-page-count">{articles.length} article{articles.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
@@ -105,8 +111,18 @@ export default async function CategoryPage({ params }: PageProps) {
                     </div>
                     <div className="news-card-body">
                       <span className="news-card-category">{categoryName}</span>
-                      <h3 className="news-card-title">{article.title}</h3>
-                      <p className="news-card-summary">{getSummary(article)}</p>
+                      <h3 
+                        className="news-card-title"
+                        {...getEditTagProps(article, 'title', 'news_article', locale)}
+                      >
+                        {article.title}
+                      </h3>
+                      <p 
+                        className="news-card-summary"
+                        {...getEditTagProps(article, 'description', 'news_article', locale)}
+                      >
+                        {getSummary(article)}
+                      </p>
                       <div className="news-card-footer">
                         <span className="news-card-author">{author?.name || 'Staff'}</span>
                         <span className="news-card-time">{timeAgo(article.published_date, locale)}</span>

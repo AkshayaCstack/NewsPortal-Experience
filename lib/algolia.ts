@@ -5,5 +5,5 @@ export const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!
 );
 
-export const ALGOLIA_INDEX_NAME = "content-search";
+export const ALGOLIA_INDEX_NAME = "news-portal";
 

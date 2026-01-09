@@ -193,9 +193,12 @@ export default async function LiveBlogPage({ params }: PageProps) {
             <span className="liveblog-updates-count">{sortedUpdates.length} updates</span>
           </div>
 
-          {/* Hero Image - Below Content, Full Width */}
+          {/* Hero Image - Below Content, Full Width - With Edit Tag */}
           {heroImage && (
-            <div className="liveblog-hero-image">
+            <div 
+              className="liveblog-hero-image"
+              {...getEditTagProps(liveBlog, 'hero_image', 'live_blog', locale)}
+            >
               <img src={heroImage} alt={liveBlog.title} />
             </div>
           )}
