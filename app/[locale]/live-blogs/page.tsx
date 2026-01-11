@@ -4,6 +4,12 @@ import { i18nConfig } from "@/i18n.config";
 import ContentSearch from "@/components/search/ContentSearch";
 import { getEditTagProps } from "@/lib/editTags";
 
+// Helper to strip HTML tags from text
+function stripHtmlTags(text: string): string {
+  if (!text) return '';
+  return text.replace(/<[^>]*>/g, '').trim();
+}
+
 interface PageProps {
   params: Promise<{ locale: string }>;
 }
@@ -271,9 +277,10 @@ function CommandFeedCard({ blog, locale, isPrimary }: { blog: any; locale: strin
   const updates = blog.liveupdates || [];
   const latestUpdate = updates[0]?.update;
   
-  const description = typeof blog.description === 'object' 
+  const rawDescription = typeof blog.description === 'object' 
     ? jsonRteToText(blog.description) 
     : blog.description;
+  const description = stripHtmlTags(rawDescription);
 
   return (
     <Link href={`/${locale}/live-blogs/${blog.uid}`} className={`command-feed-card ${isPrimary ? 'primary' : 'secondary'}`}>

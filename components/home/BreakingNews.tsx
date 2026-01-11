@@ -72,6 +72,17 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
     }
   }, [fetchPollData, authLoading, user]);
 
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    if (articles.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev === articles.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [articles.length]);
+
   if (!articles || articles.length === 0) return null;
 
   const currentArticle = articles[currentIndex];
@@ -363,6 +374,11 @@ export default function BreakingNews({ articles, title, locale = 'en-us' }: Brea
             ))}
           </div>
         )}
+
+      {/* Auto-slide progress bar */}
+      {articles.length > 1 && (
+        <div className="bn-progress-bar" key={currentIndex} />
+      )}
     </section>
   );
 }

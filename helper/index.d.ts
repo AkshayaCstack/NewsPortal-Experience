@@ -71,3 +71,9 @@ export function formatDuration(seconds: number): string;
 export function getEditorialQuotes(locale?: string): Promise<any[]>;
 export function getRandomEditorialQuote(locale?: string): Promise<any | null>;
 export function getFeaturedEditorialQuote(locale?: string): Promise<any | null>;
+
+// User Stories Functions
+export function getAllUserStories(locale?: string): Promise<any[]>;
+export function getUserStoryByUid(uid: string, locale?: string): Promise<any | null>;
+export function getAllUserStoryUids(locale?: string): Promise<string[]>;
+export function getFeaturedUserStories(locale?: string, limit?: number): Promise<any[]>;

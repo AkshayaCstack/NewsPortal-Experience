@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { timeAgo } from "@/helper";
 import { getEditTagProps } from "@/lib/editTags";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface FeaturedPostsProps {
   videos: any[];
@@ -94,85 +95,87 @@ export default function FeaturedPosts({ videos, podcasts, magazines, locale, tit
   if (allFeatured.length === 0) return null;
 
   return (
-    <section className="featured-posts-section">
-      <div className="container" id="featured-posts-section-unique">
-        <div className="section-header-bar">
-          <div className="section-header-text">
-            <h2 className="section-label">
-              <span className="label-accent"></span>
-              {title || 'FEATURED POSTS'}
-            </h2>
-            {description && <p className="section-description">{description}</p>}
+    <ScrollReveal direction="up" delay={100}>
+      <section className="featured-posts-section">
+        <div className="container" id="featured-posts-section-unique">
+          <div className="section-header-bar">
+            <div className="section-header-text">
+              <h2 className="section-label">
+                <span className="label-accent"></span>
+                {title || 'FEATURED POSTS'}
+              </h2>
+              {description && <p className="section-description">{description}</p>}
+            </div>
+            <div className="featured-nav-controls">
+              <span className="featured-count">{allFeatured.length} items</span>
+              <button 
+                className="featured-nav-btn" 
+                onClick={() => scroll('left')}
+                aria-label="Scroll left"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <button 
+                className="featured-nav-btn" 
+                onClick={() => scroll('right')}
+                aria-label="Scroll right"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="featured-nav-controls">
-            <span className="featured-count">{allFeatured.length} items</span>
-            <button 
-              className="featured-nav-btn" 
-              onClick={() => scroll('left')}
-              aria-label="Scroll left"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6"/>
-              </svg>
-            </button>
-            <button 
-              className="featured-nav-btn" 
-              onClick={() => scroll('right')}
-              aria-label="Scroll right"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-          </div>
-        </div>
 
-        <div className="featured-posts-scroll-wrapper">
-          <div className="featured-posts-scroll" ref={scrollRef}>
-            {allFeatured.map((post: any, index: number) => {
-              const category = post.category?.[0] || post.category;
-              
-              return (
-                <Link 
-                  key={post.uid || index} 
-                  href={getContentLink(post)}
-                  className="featured-post-card"
-                >
-                  <div className="featured-post-image">
-                    <img 
-                      src={post.image || 'https://via.placeholder.com/300x200'} 
-                      alt={post.title} 
-                    />
-                    {/* Content type icon overlay */}
-                    {getContentTypeIcon(post.contentType)}
-                  </div>
-                  <div className="featured-post-content">
-                    <div className="featured-post-badges">
-                      {category && (
-                        <span className="category-badge">{category.title || category.name}</span>
-                      )}
+          <div className="featured-posts-scroll-wrapper">
+            <div className="featured-posts-scroll" ref={scrollRef}>
+              {allFeatured.map((post: any, index: number) => {
+                const category = post.category?.[0] || post.category;
+                
+                return (
+                  <Link 
+                    key={post.uid || index} 
+                    href={getContentLink(post)}
+                    className="featured-post-card"
+                  >
+                    <div className="featured-post-image">
+                      <img 
+                        src={post.image || 'https://via.placeholder.com/300x200'} 
+                        alt={post.title} 
+                      />
+                      {/* Content type icon overlay */}
+                      {getContentTypeIcon(post.contentType)}
                     </div>
-                    <h3 
-                      className="featured-post-title"
-                      {...getEditTagProps(post, 'title', post.contentType === 'video' ? 'videos' : post.contentType, locale)}
-                    >
-                      {post.title}
-                    </h3>
-                    <span className="featured-post-date">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                      </svg>
-                      {timeAgo(post.date, locale)}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+                    <div className="featured-post-content">
+                      <div className="featured-post-badges">
+                        {category && (
+                          <span className="category-badge">{category.title || category.name}</span>
+                        )}
+                      </div>
+                      <h3 
+                        className="featured-post-title"
+                        {...getEditTagProps(post, 'title', post.contentType === 'video' ? 'videos' : post.contentType, locale)}
+                      >
+                        {post.title}
+                      </h3>
+                      <span className="featured-post-date">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 6v6l4 2"/>
+                        </svg>
+                        {timeAgo(post.date, locale)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </ScrollReveal>
   );
 }
 

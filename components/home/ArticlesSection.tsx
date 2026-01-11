@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { timeAgo } from "@/helper";
 import { getEditTagProps } from "@/lib/editTags";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface ArticlesSectionProps {
   data: any[];
@@ -33,6 +36,7 @@ export default function ArticlesSection({
   const defaultSeeMoreLink = `/${locale}/news`;
 
   return (
+    <ScrollReveal direction="up" delay={100}>
     <section className="articles-section">
       <div className="container">
         <div className="section-header-row">
@@ -83,12 +87,12 @@ export default function ArticlesSection({
                       <span className="meta-category">{category.title || category.name}</span>
                     )}
                   </div>
-                  <h3 
-                    className="article-card-title"
-                    {...getEditTagProps(article, 'title', 'news_article', locale)}
-                  >
-                    {articleTitle}
-                  </h3>
+                    <h3 
+                      className="article-card-title"
+                      {...getEditTagProps(article, 'title', 'news_article', locale)}
+                    >
+                      {articleTitle}
+                    </h3>
                   <span className="article-card-time">{timeAgo(article.published_date, locale)}</span>
                 </div>
               </Link>
@@ -97,5 +101,6 @@ export default function ArticlesSection({
         </div>
       </div>
     </section>
+    </ScrollReveal>
   );
 }

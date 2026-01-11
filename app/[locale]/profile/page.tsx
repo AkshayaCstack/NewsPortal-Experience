@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useParams } from 'next/navigation';
 import AuthModal from '@/components/auth/AuthModal';
 import { supabase } from '@/lib/supabase';
+import MySubmissions from '@/components/user-stories/MySubmissions';
 
 export default function ProfilePage() {
   const { user, profile, subscription, loading: authLoading, refreshProfile } = useAuth();
@@ -257,8 +258,26 @@ export default function ProfilePage() {
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </Link>
+
+            <Link href={`/${locale}/user-stories`} className="quick-link-card">
+              <div className="quick-link-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                </svg>
+              </div>
+              <div className="quick-link-content">
+                <h3>User Stories</h3>
+                <p>Browse and share community stories</p>
+              </div>
+              <svg className="quick-link-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </Link>
           </div>
         </section>
+
+        {/* My Submissions Section */}
+        <MySubmissions locale={locale} />
 
         {/* Account Info */}
         <section className="profile-account-info">

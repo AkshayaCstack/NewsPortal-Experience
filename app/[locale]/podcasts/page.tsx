@@ -287,7 +287,7 @@ function TimelineShowCard({ podcast, locale, index }: { podcast: any; locale: st
         <div className="timeline-top">
         {category && (
             <span className="timeline-category">{category.title || category.name}</span>
-          )}
+        )}
           {podcast.is_featured && (
             <span className="timeline-badge-featured">Featured</span>
         )}

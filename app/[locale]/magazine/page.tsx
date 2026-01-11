@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: headerHero?.title ? `${headerHero.title} | Magazine` : "Magazine | The Editorial Flipbook",
     description: headerHero?.text_area || "Curated, long-form content featuring special reports, investigative pieces, and downloadable issues",
-  };
+};
 }
 
 // Fallback quotes (used only if CMS quotes are not available)

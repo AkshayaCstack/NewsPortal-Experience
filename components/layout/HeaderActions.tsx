@@ -6,6 +6,7 @@ import UserMenu from '@/components/auth/UserMenu';
 import AuthModal from '@/components/auth/AuthModal';
 import SubscriptionModal from '@/components/subscription/SubscriptionModal';
 import GlobalSearch from '@/components/search/GlobalSearch';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface HeaderActionsProps {
   locale: string;
@@ -33,6 +34,9 @@ export default function HeaderActions({ locale }: HeaderActionsProps) {
             <path d="m21 21-4.35-4.35"/>
           </svg>
         </button>
+
+        {/* Notifications */}
+        <NotificationBell locale={locale} />
 
         {/* User Menu */}
         <UserMenu 

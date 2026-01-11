@@ -1070,3 +1070,84 @@ export async function getFeaturedEditorialQuote(locale = DEFAULT_LOCALE) {
   const quotes = EDITORIAL_QUOTES[locale] || EDITORIAL_QUOTES['en-us'];
   return quotes[0] || null;
 }
+
+/* -------------------------
+   USER STORIES: Get All User Stories from CMS
+-------------------------- */
+export async function getAllUserStories(locale = DEFAULT_LOCALE) {
+  try {
+    const Query = Stack.ContentType("user_stories")
+      .Query()
+      .language(locale)
+      .includeFallback()
+      .includeReference(["category"])
+      .toJSON();
+    
+    const response = await Query.find();
+    const entries = response[0] || [];
+    
+    // Sort by created_at descending (newest first)
+    return entries.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  } catch (error) {
+    console.error("Error fetching user stories:", error);
+    return [];
+  }
+}
+
+/* -------------------------
+   USER STORIES: Get Single User Story by UID
+-------------------------- */
+export async function getUserStoryByUid(uid, locale = DEFAULT_LOCALE) {
+  try {
+    const Query = Stack.ContentType("user_stories")
+      .Query()
+      .language(locale)
+      .includeFallback()
+      .includeReference(["category"])
+      .where("uid", uid)
+      .toJSON();
+    
+    const response = await Query.find();
+    return response[0]?.[0] || null;
+  } catch (error) {
+    console.error("Error fetching user story:", error);
+    return null;
+  }
+}
+
+/* -------------------------
+   USER STORIES: Get All User Story UIDs (for static generation)
+-------------------------- */
+export async function getAllUserStoryUids(locale = DEFAULT_LOCALE) {
+  try {
+    const Query = Stack.ContentType("user_stories")
+      .Query()
+      .language(locale)
+      .includeFallback()
+      .only(["uid"])
+      .toJSON();
+    
+    const response = await Query.find();
+    const entries = response[0] || [];
+    return entries.map(entry => entry.uid);
+  } catch (error) {
+    console.error("Error fetching user story UIDs:", error);
+    return [];
+  }
+}
+
+/* -------------------------
+   USER STORIES: Get Featured User Stories
+-------------------------- */
+export async function getFeaturedUserStories(locale = DEFAULT_LOCALE, limit = 6) {
+  try {
+    const stories = await getAllUserStories(locale);
+    // Return first N stories (can add is_featured field later)
+    return stories.slice(0, limit);
+  } catch (error) {
+    console.error("Error fetching featured user stories:", error);
+    return [];
+  }
+}

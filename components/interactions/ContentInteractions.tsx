@@ -9,7 +9,7 @@ import AuthModal from '@/components/auth/AuthModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ContentInteractionsProps {
-  contentType: 'article' | 'podcast' | 'video' | 'magazine' | 'live_blog';
+  contentType: 'article' | 'podcast' | 'video' | 'magazine' | 'live_blog' | 'user_story';
   contentUid: string;
   author?: { uid: string; name: string } | null;
   category?: { uid: string; name: string } | null;
