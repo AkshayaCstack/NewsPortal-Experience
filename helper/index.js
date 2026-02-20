@@ -1076,22 +1076,49 @@ export async function getFeaturedEditorialQuote(locale = DEFAULT_LOCALE) {
 -------------------------- */
 export async function getAllUserStories(locale = DEFAULT_LOCALE) {
   try {
-    const Query = Stack.ContentType("user_stories")
-      .Query()
-      .language(locale)
-      .includeFallback()
-      .includeReference(["category"])
-      .toJSON();
+    // Contentstack defaults to 100 entries per query, so we need to handle pagination
+    // For now, we'll fetch up to 1000 entries (10 pages of 100)
+    let allEntries = [];
+    let skip = 0;
+    const limit = 100; // Contentstack default limit
+    const maxEntries = 1000; // Maximum entries to fetch
     
-    const response = await Query.find();
-    const entries = response[0] || [];
+    while (skip < maxEntries) {
+      const Query = Stack.ContentType("user_stories")
+        .Query()
+        .language(locale)
+        .includeFallback()
+        .includeReference(["category"])
+        .skip(skip)
+        .limit(limit)
+        .toJSON();
+      
+      const response = await Query.find();
+      const entries = response[0] || [];
+      
+      if (entries.length === 0) {
+        break; // No more entries
+      }
+      
+      allEntries = allEntries.concat(entries);
+      
+      // If we got fewer than the limit, we've reached the end
+      if (entries.length < limit) {
+        break;
+      }
+      
+      skip += limit;
+    }
+    
+    console.log(`[getAllUserStories] Fetched ${allEntries.length} user stories for locale: ${locale}`);
     
     // Sort by created_at descending (newest first)
-    return entries.sort((a, b) => 
+    return allEntries.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   } catch (error) {
     console.error("Error fetching user stories:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2));
     return [];
   }
 }

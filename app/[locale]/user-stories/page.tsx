@@ -13,6 +13,9 @@ export async function generateStaticParams() {
   return i18nConfig.locales.map((locale) => ({ locale }));
 }
 
+// Enable ISR: Revalidate every 60 seconds to show new user stories
+export const revalidate = 60;
+
 export const metadata = {
   title: "User Stories | Community Voices",
   description: "Read stories submitted by our community members. Share your own experiences and perspectives.",
