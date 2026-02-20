@@ -6,11 +6,12 @@ import Link from 'next/link';
 
 interface UserMenuProps {
   onLoginClick: () => void;
+  onSignupClick: () => void;
   onSubscribeClick?: () => void;
   locale?: string;
 }
 
-export default function UserMenu({ onLoginClick, onSubscribeClick, locale = 'en-us' }: UserMenuProps) {
+export default function UserMenu({ onLoginClick, onSignupClick, onSubscribeClick, locale = 'en-us' }: UserMenuProps) {
   const { user, profile, subscription, signOut, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -45,7 +46,7 @@ export default function UserMenu({ onLoginClick, onSubscribeClick, locale = 'en-
         <button className="auth-btn login" onClick={onLoginClick}>
           Sign In
         </button>
-        <button className="auth-btn signup" onClick={onLoginClick}>
+        <button className="auth-btn signup" onClick={onSignupClick}>
           Get Started
         </button>
       </div>

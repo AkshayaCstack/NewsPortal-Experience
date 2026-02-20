@@ -14,8 +14,12 @@ interface HeaderActionsProps {
 
 export default function HeaderActions({ locale }: HeaderActionsProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+
+  const openLogin = () => { setAuthModalMode('login'); setShowAuthModal(true); };
+  const openSignup = () => { setAuthModalMode('signup'); setShowAuthModal(true); };
 
   return (
     <>
@@ -41,7 +45,8 @@ export default function HeaderActions({ locale }: HeaderActionsProps) {
         {/* User Menu */}
         <UserMenu 
           locale={locale}
-          onLoginClick={() => setShowAuthModal(true)}
+          onLoginClick={openLogin}
+          onSignupClick={openSignup}
           onSubscribeClick={() => setShowSubscriptionModal(true)}
         />
       </div>
@@ -56,7 +61,8 @@ export default function HeaderActions({ locale }: HeaderActionsProps) {
       {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
       />
 
       {/* Subscription Modal */}

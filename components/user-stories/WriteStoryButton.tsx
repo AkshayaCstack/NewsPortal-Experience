@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import StorySubmissionModal from "./StorySubmissionModal";
+import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface WriteStoryButtonProps {
@@ -11,15 +12,16 @@ interface WriteStoryButtonProps {
 }
 
 export default function WriteStoryButton({ locale, variant = "default", buttonText }: WriteStoryButtonProps) {
-  const [showModal, setShowModal] = useState(false);
-  const { user, setShowAuthModal } = useAuth();
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const { user } = useAuth();
 
   const handleClick = () => {
     if (!user) {
-      setShowAuthModal(true);
+      setShowSignInModal(true);
       return;
     }
-    setShowModal(true);
+    setShowStoryModal(true);
   };
 
   const getButtonClass = () => {
@@ -33,7 +35,6 @@ export default function WriteStoryButton({ locale, variant = "default", buttonTe
     }
   };
 
-  // Default text based on locale if not provided
   const defaultText = buttonText || "Write Your Story";
 
   return (
@@ -45,10 +46,16 @@ export default function WriteStoryButton({ locale, variant = "default", buttonTe
         <span>{defaultText}</span>
       </button>
 
-      {showModal && (
-        <StorySubmissionModal 
+      <AuthModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        reason="Please sign in to share your story with the community."
+      />
+
+      {showStoryModal && (
+        <StorySubmissionModal
           locale={locale}
-          onClose={() => setShowModal(false)}
+          onClose={() => setShowStoryModal(false)}
         />
       )}
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import RichTextEditor from "./RichTextEditor";
 
@@ -115,7 +116,7 @@ export default function StorySubmissionModal({ locale, onClose, editData }: Stor
   };
 
   if (submitted) {
-    return (
+    return createPortal(
       <div className="story-modal-overlay" onClick={onClose}>
         <div className="story-modal story-modal-success" onClick={(e) => e.stopPropagation()}>
           <div className="success-icon">
@@ -135,11 +136,12 @@ export default function StorySubmissionModal({ locale, onClose, editData }: Stor
             Close
           </button>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  return (
+  return createPortal(
     <div className="story-modal-overlay" onClick={onClose}>
       <div className="story-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -391,7 +393,8 @@ export default function StorySubmissionModal({ locale, onClose, editData }: Stor
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

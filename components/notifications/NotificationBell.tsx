@@ -261,16 +261,6 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
               )}
             </div>
 
-            {notifications.length > 0 && (
-              <div className="notification-dropdown-footer">
-                <Link
-                  href={`/${locale}/profile`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  View all notifications
-                </Link>
-              </div>
-            )}
           </div>
         )}
       </div>

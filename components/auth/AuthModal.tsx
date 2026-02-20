@@ -7,9 +7,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
+  reason?: string;
 }
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', reason }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,6 +70,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
           <h2>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
           <p>{mode === 'login' ? 'Sign in to your account' : 'Join NewzHub today'}</p>
         </div>
+
+        {reason && (
+          <div className="auth-modal-reason">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            {reason}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === 'signup' && (
