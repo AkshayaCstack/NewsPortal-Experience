@@ -21,6 +21,9 @@ export async function generateStaticParams() {
   return i18nConfig.locales.map((locale) => ({ locale }));
 }
 
+// Revalidate layout (header, footer) every 60 seconds so CMS changes reflect without redeploying
+export const revalidate = 60;
+
 export default async function LocaleLayout({
   children,
   params,

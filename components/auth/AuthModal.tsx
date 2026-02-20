@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthModalProps {
@@ -18,6 +18,18 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', reas
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Sync mode and reset form state every time the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setEmail('');
+      setPassword('');
+      setName('');
+      setError('');
+      setSuccess('');
+    }
+  }, [isOpen, initialMode]);
 
   const { signIn, signUp } = useAuth();
 
