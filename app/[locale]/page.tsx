@@ -7,6 +7,7 @@ import FeaturedPosts from "@/components/home/FeaturedPosts";
 import PersonalizeTracker from "@/components/analytics/PersonalizeTracker";
 import OfferSection from "@/components/home/OfferSection";
 import WalkthroughWrapper from "@/components/walkthrough/WalkthroughWrapper";
+import ContentSpotlight from "@/components/home/ContentSpotlight";
 import { headers, cookies } from "next/headers";
 import { getEditTagProps } from "@/lib/editTags";
 
@@ -101,6 +102,11 @@ export default async function HomePage({ params, searchParams }: PageProps) {
   const offerBlock = page.components?.find(
     (block: any) => block.offer_section
   )?.offer_section;
+
+  // Find Content Spotlight block (from Experience 2 — interest-based personalization)
+  const spotlightBlock = page.components?.find(
+    (block: any) => block.content_spotlight
+  )?.content_spotlight;
 
   // Find Sign-in card block if CMS included it
   const signinBlock = page.components?.find((block: any) => {
@@ -225,7 +231,33 @@ export default async function HomePage({ params, searchParams }: PageProps) {
           PERSONALIZED CONTENT - CMS-DRIVEN RENDERING
           Render ONLY what CMS returns in the variant
           ============================================ */}
-      
+
+      {/* Content Spotlight — Experience 2: Interest-Based Personalization
+          CMS returns this block only when user matches a Lytics interest segment
+          spotlight_type drives which content (podcast/video/sports/etc.) is shown */}
+      {spotlightBlock && (
+        <ContentSpotlight
+          spotlightType={spotlightBlock.spotlight_type}
+          title={spotlightBlock.title}
+          description={spotlightBlock.description}
+          ctaText={spotlightBlock.cta_text}
+          ctaUrl={spotlightBlock.cta_url}
+          items={
+            spotlightBlock.spotlight_type === "podcast"  ? (featuredPodcasts || []) :
+            spotlightBlock.spotlight_type === "video"    ? (featuredVideos   || []) :
+            spotlightBlock.spotlight_type === "premium"  ? (featuredMagazines.length > 0
+              ? featuredMagazines
+              : allArticles?.filter((a: any) => a.is_premium).slice(0, 4) || []) :
+            allArticles?.filter((a: any) =>
+              a.category?.some((c: any) =>
+                (c.name ?? c.title ?? "").toLowerCase() === spotlightBlock.spotlight_type
+              )
+            ).slice(0, 4) || []
+          }
+          locale={locale}
+        />
+      )}
+
       {/* Offer Section - With Edit Tags - rendered if CMS included it in the variant */}
       {offerBlock && (
         <div {...getEditTagProps(page, `components.${offerIndex}.offer_section`, 'page', locale)}>
